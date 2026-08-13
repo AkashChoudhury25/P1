@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark-glass">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudFolio — Cloud Resume Builder & Portfolio</title>
+  <meta name="description" content="Build professional printable resumes and publish interactive cloud-hosted web portfolios with live preview, multi-theme engine, and PDF export." />
+  <meta name="keywords" content="resume builder, portfolio website, cloud hosting, vercel, PDF export, career" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☁️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       THEME VARIABLES
+    ═══════════════════════════════════════════ */
+    :root,[data-theme="dark-glass"]{
+      --bg-base:#07090f;--bg-surface:#0f1624;--bg-card:rgba(15,22,36,.8);
+      --bg-input:rgba(255,255,255,.05);--border:rgba(255,255,255,.1);
+      --text-primary:#f0f4ff;--text-secondary:#8898aa;--text-muted:#4a5568;
+      --accent:#38bdf8;--accent-end:#818cf8;--accent-third:#c084fc;
+      --accent-grad:linear-gradient(135deg,#38bdf8,#818cf8 55%,#c084fc);
+      --accent-glow:rgba(56,189,248,.2);
+      --badge-bg:rgba(56,189,248,.12);--badge-text:#38bdf8;--badge-border:rgba(56,189,248,.25);
+      --shadow:rgba(0,0,0,.45);--blur:blur(18px);
+      --resume-bg:#1a2236;--resume-text:#e8eeff;--resume-border:#2d3a52;
+      --success:rgba(16,185,129,.15);--success-text:#10b981;
+      --error:rgba(239,68,68,.15);--error-text:#ef4444;
+    }
+    [data-theme="corporate"]{
+      --bg-base:#f0f4f8;--bg-surface:#ffffff;--bg-card:#ffffff;
+      --bg-input:#f7fafc;--border:#e2e8f0;
+      --text-primary:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;
+      --accent:#2563eb;--accent-end:#1e40af;--accent-third:#3b82f6;
+      --accent-grad:linear-gradient(135deg,#2563eb,#1d4ed8);
+      --accent-glow:rgba(37,99,235,.12);
+      --badge-bg:#eff6ff;--badge-text:#1d4ed8;--badge-border:#bfdbfe;
+      --shadow:rgba(15,23,42,.07);--blur:none;
+      --resume-bg:#ffffff;--resume-text:#0f172a;--resume-border:#e2e8f0;
+    }
+    [data-theme="neon"]{
+      --bg-base:#08001c;--bg-surface:#10002e;--bg-card:rgba(20,0,50,.8);
+      --bg-input:rgba(255,255,255,.04);--border:rgba(236,72,153,.2);
+      --text-primary:#fff;--text-secondary:#c4b5fd;--text-muted:#7c3aed;
+      --accent:#ec4899;--accent-end:#a855f7;--accent-third:#f472b6;
+      --accent-grad:linear-gradient(135deg,#f43f5e,#ec4899 50%,#a855f7);
+      --accent-glow:rgba(236,72,153,.25);
+      --badge-bg:rgba(236,72,153,.12);--badge-text:#f472b6;--badge-border:rgba(236,72,153,.35);
+      --shadow:rgba(236,72,153,.15);--blur:blur(20px);
+      --resume-bg:#1a0035;--resume-text:#fdf4ff;--resume-border:#4c1d95;
+    }
+
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════ */
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg-base);color:var(--text-primary);
+      min-height:100vh;overflow-x:hidden;
+      transition:background .3s,color .3s;
+    }
+    h1,h2,h3,h4{font-family:'Outfit',sans-serif;letter-spacing:-.02em}
+    a{color:var(--accent);text-decoration:none}
+    button,select,input,textarea{font-family:inherit}
+    input,textarea,select{
+      width:100%;padding:.65rem .9rem;
+      border-radius:8px;border:1.5px solid var(--border);
+      background:var(--bg-input);color:var(--text-primary);
+      font-size:.9rem;outline:none;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    input:focus,textarea:focus,select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px var(--accent-glow);
+    }
+    input.error-field,textarea.error-field{border-color:var(--error-text)!important}
+    textarea{resize:vertical;min-height:72px;line-height:1.5}
+
+    /* ═══════════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════════ */
+    #root{display:flex;flex-direction:column;min-height:100vh}
+
+    /* ─── Navbar ─── */
+    .navbar{
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;
+      padding:.75rem 1.5rem;
+      background:var(--bg-surface);border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:200;
+      backdrop-filter:var(--blur);
+    }
+    .nav-brand{display:flex;align-items:center;gap:.7rem;cursor:pointer}
+    .nav-logo{
+      width:38px;height:38px;border-radius:10px;
+      background:var(--accent-grad);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.2rem;box-shadow:0 4px 14px var(--accent-glow);
+      flex-shrink:0;
+    }
+    .nav-title{font-size:1.2rem;font-weight:800;background:var(--accent-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-sub{font-size:.72rem;color:var(--text-secondary);margin-top:.05rem}
+    .nav-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+    /* ─── Landing Page ─── */
+    .landing{
+      display:flex;flex-direction:column;align-items:center;
+      padding:5rem 1.5rem 4rem;text-align:center;flex:1;
+    }
+    .landing-badge{
+      display:inline-flex;align-items:center;gap:.5rem;
+      padding:.35rem .85rem;border-radius:20px;
+      background:var(--badge-bg);color:var(--badge-text);border:1px solid var(--badge-border);
+      font-size:.8rem;font-weight:700;margin-bottom:1.5rem;letter-spacing:.03em;
+    }
+    .landing h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:900;line-height:1.1;max-width:800px}
+    .landing h1 span{background:var(--accent-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .landing-sub{
+      max-width:600px;margin:1.25rem auto 2.5rem;
+      color:var(--text-secondary);font-size:1.1rem;line-height:1.6;
+    }
+    .landing-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+    .features-grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:1.25rem;margin-top:4rem;width:100%;max-width:960px;text-align:left;
+    }
+    .feature-card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:14px;padding:1.5rem;
+      backdrop-filter:var(--blur);
+      transition:transform .2s,border-color .2s,box-shadow .2s;
+    }
+    .feature-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 24px var(--shadow)}
+    .feature-icon{font-size:2rem;margin-bottom:.85rem}
+    .feature-title{font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
+    .feature-desc{font-size:.875rem;color:var(--text-secondary);line-height:1.55}
+
+    /* ─── Builder Layout ─── */
+    .builder{display:flex;flex:1;height:calc(100vh - 65px);overflow:hidden}
+    @media(max-width:900px){.builder{flex-direction:column;height:auto;overflow:visible}}
+    .editor-panel{
+      width:46%;min-width:320px;
+      background:var(--bg-surface);border-right:1px solid var(--border);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    @media(max-width:900px){.editor-panel{width:100%;min-height:auto}}
+    .preview-panel{
+      flex:1;background:var(--bg-base);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    @media(max-width:900px){.preview-panel{min-height:600px}}
+
+    /* ─── Tab Bar ─── */
+    .tab-bar{
+      display:flex;gap:.25rem;padding:.6rem .85rem;
+      background:var(--bg-base);border-bottom:1px solid var(--border);
+      overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+    }
+    .tab-bar::-webkit-scrollbar{display:none}
+    .tab-btn{
+      padding:.42rem .75rem;border-radius:7px;font-size:.78rem;font-weight:600;
+      color:var(--text-secondary);background:transparent;border:none;cursor:pointer;
+      white-space:nowrap;display:flex;align-items:center;gap:.35rem;
+      transition:all .15s;
+    }
+    .tab-btn:hover{color:var(--text-primary);background:var(--bg-card)}
+    .tab-btn.active{background:var(--badge-bg);color:var(--badge-text);border:1px solid var(--badge-border)}
+
+    /* ─── Form Area ─── */
+    .form-scroll{flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1.1rem}
+    .form-scroll::-webkit-scrollbar{width:4px}
+    .form-scroll::-webkit-scrollbar-track{background:transparent}
+    .form-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .form-group{display:flex;flex-direction:column;gap:.35rem}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+    @media(max-width:600px){.form-row{grid-template-columns:1fr}}
+    label{font-size:.78rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em}
+    .label-row{display:flex;align-items:center;justify-content:space-between}
+    .field-error{font-size:.75rem;color:var(--error-text);margin-top:.2rem;display:flex;align-items:center;gap:.3rem}
+
+    /* ─── Dynamic Item Cards ─── */
+    .item-card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:12px;padding:1.1rem;
+      display:flex;flex-direction:column;gap:.85rem;
+      backdrop-filter:var(--blur);
+    }
+    .item-card-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+    .item-card-label{font-size:.9rem;font-weight:700}
+
+    /* ─── Section Header in form ─── */
+    .section-head{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:-.2rem;
+    }
+    .section-title-small{font-size:.95rem;font-weight:700;color:var(--text-primary)}
+
+    /* ─── Preview Header ─── */
+    .preview-bar{
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;
+      padding:.7rem 1.1rem;background:var(--bg-surface);border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .preview-bar-left{display:flex;align-items:center;gap:.6rem}
+    .preview-badge{
+      font-size:.72rem;font-weight:700;padding:.25rem .55rem;border-radius:5px;
+      background:var(--badge-bg);color:var(--badge-text);border:1px solid var(--badge-border);
+    }
+    .view-toggle{display:flex;background:var(--bg-input);border-radius:8px;padding:.2rem;gap:.2rem}
+    .vt-btn{
+      padding:.38rem .8rem;border-radius:6px;font-size:.78rem;font-weight:700;
+      border:none;background:transparent;color:var(--text-secondary);cursor:pointer;
+      transition:all .15s;
+    }
+    .vt-btn.active{background:var(--accent-grad);color:#fff;box-shadow:0 2px 8px var(--accent-glow)}
+
+    /* ─── Preview Scroll ─── */
+    .preview-scroll{flex:1;overflow-y:auto;padding:1.25rem}
+    .preview-scroll::-webkit-scrollbar{width:4px}
+    .preview-scroll::-webkit-scrollbar-track{background:transparent}
+    .preview-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+    /* ─── Resume Document ─── */
+    .resume-doc{
+      background:var(--resume-bg);color:var(--resume-text);
+      border:1px solid var(--resume-border);border-radius:12px;
+      padding:2.25rem;max-width:760px;margin:0 auto;width:100%;
+      box-shadow:0 12px 40px var(--shadow);
+      font-size:.88rem;line-height:1.55;
+    }
+    .resume-header-section{
+      border-bottom:2.5px solid var(--accent);padding-bottom:1.1rem;margin-bottom:1.25rem;
+    }
+    .resume-name{font-size:2rem;font-weight:800;color:var(--resume-text)}
+    .resume-title-line{font-size:1.05rem;color:var(--accent);font-weight:600;margin:.15rem 0}
+    .resume-contact-row{
+      display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;margin-top:.7rem;
+      font-size:.82rem;color:var(--text-secondary);
+    }
+    .resume-contact-item{display:flex;align-items:center;gap:.3rem}
+    .resume-contact-item a{color:inherit;text-decoration:none}
+    .resume-section{margin-bottom:1.35rem}
+    .resume-section-title{
+      font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+      color:var(--accent);border-bottom:1px solid var(--resume-border);
+      padding-bottom:.3rem;margin-bottom:.8rem;
+    }
+    .resume-item{margin-bottom:.9rem}
+    .resume-item-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.25rem}
+    .resume-item-title{font-weight:700;font-size:.92rem}
+    .resume-item-right{font-size:.8rem;color:var(--text-secondary)}
+    .resume-item-sub{font-size:.82rem;color:var(--text-secondary);margin:.15rem 0 .3rem}
+    .resume-item-desc{font-size:.85rem;color:var(--resume-text);line-height:1.55}
+    .resume-highlights{padding-left:1.1rem;margin-top:.3rem;font-size:.83rem}
+    .resume-highlights li{margin-bottom:.2rem}
+    .skills-wrap{display:flex;flex-wrap:wrap;gap:.45rem}
+    .skill-chip{
+      padding:.28rem .65rem;border-radius:6px;font-size:.78rem;font-weight:600;
+      background:var(--badge-bg);color:var(--badge-text);border:1px solid var(--badge-border);
+    }
+    .cert-item{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;margin-bottom:.5rem}
+
+    /* ─── Portfolio View ─── */
+    .portfolio{display:flex;flex-direction:column;gap:1.75rem;max-width:820px;margin:0 auto;width:100%}
+    .portfolio-hero{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:18px;padding:2.5rem 2rem;text-align:center;
+      position:relative;overflow:hidden;backdrop-filter:var(--blur);
+    }
+    .portfolio-hero::before{
+      content:'';position:absolute;top:-60%;left:-30%;
+      width:160%;height:200%;
+      background:radial-gradient(circle,var(--accent-glow) 0%,transparent 65%);
+      pointer-events:none;
+    }
+    .portfolio-avatar{
+      width:88px;height:88px;border-radius:50%;
+      background:var(--accent-grad);display:flex;align-items:center;justify-content:center;
+      font-size:2.2rem;font-weight:900;color:#fff;margin:0 auto 1.1rem;
+      box-shadow:0 8px 30px var(--accent-glow);letter-spacing:-.02em;
+    }
+    .portfolio-name{font-size:2.1rem;font-weight:900}
+    .portfolio-role{font-size:1.1rem;color:var(--accent);font-weight:600;margin:.3rem 0}
+    .portfolio-bio{
+      max-width:580px;margin:.85rem auto 1.5rem;
+      color:var(--text-secondary);font-size:.95rem;line-height:1.6;
+    }
+    .portfolio-links{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
+    .portfolio-card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:14px;padding:1.35rem;backdrop-filter:var(--blur);
+      transition:transform .2s,border-color .2s,box-shadow .2s;
+    }
+    .portfolio-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 10px 28px var(--shadow)}
+    .portfolio-card-title{font-size:1rem;font-weight:700;margin-bottom:.85rem;display:flex;align-items:center;gap:.5rem}
+    .proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+    .proj-card{
+      background:var(--bg-input);border:1px solid var(--border);
+      border-radius:10px;padding:1.1rem;
+      display:flex;flex-direction:column;justify-content:space-between;gap:.75rem;
+      transition:border-color .2s;
+    }
+    .proj-card:hover{border-color:var(--accent)}
+    .proj-tech{font-size:.75rem;color:var(--accent);font-weight:700;margin:.3rem 0 .5rem}
+    .proj-desc{font-size:.85rem;color:var(--text-secondary);line-height:1.5}
+    .timeline-item{
+      border-left:2px solid var(--accent);padding-left:1rem;
+      margin-bottom:1.1rem;display:flex;flex-direction:column;gap:.2rem;
+    }
+    .tl-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.25rem}
+    .tl-role{font-weight:700;font-size:.95rem}
+    .tl-date{font-size:.78rem;color:var(--text-muted)}
+    .tl-company{font-size:.85rem;color:var(--accent);font-weight:600}
+    .tl-desc{font-size:.85rem;color:var(--text-secondary);margin-top:.3rem;line-height:1.5}
+
+    /* ─── Buttons ─── */
+    .btn{
+      display:inline-flex;align-items:center;gap:.45rem;
+      padding:.55rem 1.1rem;border-radius:8px;font-size:.875rem;font-weight:700;
+      cursor:pointer;border:1.5px solid transparent;outline:none;
+      transition:all .2s cubic-bezier(.4,0,.2,1);white-space:nowrap;
+    }
+    .btn-primary{background:var(--accent-grad);color:#fff;box-shadow:0 4px 12px var(--accent-glow)}
+    .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 6px 18px var(--accent-glow)}
+    .btn-secondary{background:var(--bg-card);color:var(--text-primary);border-color:var(--border)}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-danger{background:rgba(239,68,68,.12);color:#ef4444;border-color:rgba(239,68,68,.3)}
+    .btn-danger:hover{background:rgba(239,68,68,.22)}
+    .btn-success{background:var(--success);color:var(--success-text);border-color:rgba(16,185,129,.3)}
+    .btn-sm{padding:.32rem .65rem;font-size:.78rem}
+    .btn-lg{padding:.7rem 1.5rem;font-size:1rem}
+
+    /* ─── Analytics Badge ─── */
+    .analytics-badge{
+      display:flex;align-items:center;gap:.6rem;
+      background:var(--bg-card);border:1px solid var(--badge-border);
+      padding:.38rem .8rem;border-radius:20px;font-size:.78rem;font-weight:700;
+    }
+    .pulse{
+      width:8px;height:8px;border-radius:50%;
+      background:#10b981;box-shadow:0 0 10px #10b981;
+      animation:pulse 2s infinite;flex-shrink:0;
+    }
+    @keyframes pulse{
+      0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(16,185,129,.7)}
+      70%{transform:scale(1);box-shadow:0 0 0 5px rgba(16,185,129,0)}
+      100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(16,185,129,0)}
+    }
+
+    /* ─── Theme Selector ─── */
+    .theme-sel{
+      display:flex;align-items:center;gap:.4rem;
+      background:var(--bg-card);border:1.5px solid var(--border);
+      padding:.38rem .75rem;border-radius:8px;
+    }
+    .theme-sel select{
+      background:transparent;border:none;box-shadow:none;
+      padding:0;font-size:.82rem;font-weight:700;width:auto;
+      color:var(--text-primary);cursor:pointer;
+    }
+    .theme-sel select:focus{border:none;box-shadow:none}
+
+    /* ─── Modal ─── */
+    .modal-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.75);
+      backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;
+      z-index:9999;padding:1rem;
+    }
+    .modal-box{
+      background:var(--bg-surface);border:1px solid var(--border);
+      border-radius:18px;padding:2rem;max-width:440px;width:100%;
+      display:flex;flex-direction:column;align-items:center;gap:1.2rem;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);
+    }
+    .modal-title{font-size:1.3rem;font-weight:800}
+    .modal-sub{font-size:.85rem;color:var(--text-secondary);text-align:center;line-height:1.5}
+    .qr-frame{background:#fff;padding:1rem;border-radius:12px;display:inline-block}
+
+    /* ─── Toasts ─── */
+    .toast-stack{position:fixed;bottom:1.5rem;right:1.5rem;z-index:10000;display:flex;flex-direction:column;gap:.5rem;max-width:320px}
+    .toast{
+      background:var(--bg-surface);border:1px solid var(--accent);
+      padding:.7rem 1.1rem;border-radius:10px;font-size:.84rem;font-weight:600;
+      display:flex;align-items:center;gap:.6rem;
+      box-shadow:0 8px 24px var(--shadow);
+      animation:slideIn .3s cubic-bezier(.4,0,.2,1);
+    }
+    .toast-error{border-color:var(--error-text)}
+    @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+    /* ─── Empty / Loading States ─── */
+    .empty-state{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:.85rem;padding:3rem 1rem;text-align:center;color:var(--text-secondary);
+    }
+    .empty-icon{font-size:3rem;opacity:.5}
+    .skeleton{background:linear-gradient(90deg,var(--border) 0%,var(--bg-card) 50%,var(--border) 100%);background-size:200%;border-radius:6px;animation:shimmer 1.5s infinite}
+    @keyframes shimmer{to{background-position:-200%}}
+
+    /* ─── Validation alert inline ─── */
+    .validation-banner{
+      background:var(--error);border:1px solid rgba(239,68,68,.3);
+      border-radius:8px;padding:.75rem 1rem;font-size:.83rem;color:var(--error-text);
+      display:flex;align-items:flex-start;gap:.5rem;line-height:1.4;
+    }
+
+    /* ─── Action Verb Enhancer chip ─── */
+    .enhancer-chip{
+      display:inline-flex;align-items:center;gap:.3rem;font-size:.73rem;font-weight:700;
+      padding:.25rem .55rem;border-radius:14px;cursor:pointer;
+      background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(236,72,153,.18));
+      color:#d8b4fe;border:1px solid rgba(168,85,247,.35);
+      transition:filter .15s,transform .15s;
+    }
+    .enhancer-chip:hover{filter:brightness(1.2);transform:translateY(-1px)}
+
+    /* ─── Status Indicator ─── */
+    .save-status{font-size:.72rem;color:var(--text-muted);display:flex;align-items:center;gap:.3rem}
+
+    /* ═══════════════════════════════════════════
+       PRINT STYLES (PDF Export)
+    ═══════════════════════════════════════════ */
+    @page {
+      size: A4 portrait;
+      margin: 15mm 20mm;
+      /*
+        @page sets the printable page dimensions (A4) and content margins.
+        It does NOT suppress browser-generated print headers/footers
+        (date, URL, page numbers). Those are controlled by the browser's
+        own print dialog settings — not by any webpage CSS rule.
+
+        To export a clean PDF without browser headers/footers:
+          Chrome/Edge: Print dialog → More settings → uncheck "Headers and footers"
+          Firefox:     Print dialog → uncheck "Print headers and footers"
+          Safari:      Print dialog → uncheck page header/footer options
+
+        The resume content itself contains no date, URL, or page-number
+        elements — only the browser's own UI chrome produces those.
+      */
+    }
+    @media print{
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      html,body{margin:0!important;padding:0!important;background:#fff!important}
+      body *{visibility:hidden}
+      .navbar,.editor-panel,.preview-bar,.preview-panel>*:not(.preview-scroll),
+      .toast-stack,.modal-bg,.btn,.tab-bar{display:none!important}
+      .preview-scroll{
+        overflow:visible!important;padding:0!important;
+        position:static!important;
+      }
+      .preview-scroll,.resume-doc,.resume-doc *{visibility:visible!important}
+      .resume-doc{
+        position:static!important;
+        width:100%!important;max-width:100%!important;
+        margin:0!important;border:none!important;border-radius:0!important;
+        box-shadow:none!important;padding:0!important;
+        background:#ffffff!important;color:#0f172a!important;font-size:10.5pt!important;
+        min-height:auto!important;
+      }
+      
+      /* Force high contrast dark text for all readable content */
+      .resume-doc,
+      .resume-contact-row,
+      .resume-contact-item,
+      .resume-contact-item a,
+      .resume-item-sub,
+      .resume-item-desc,
+      .resume-item-right,
+      .resume-highlights,
+      .resume-highlights li,
+      .cert-item span,
+      p, a, li {
+        color:#0f172a!important; /* Near black */
+        opacity:1!important; /* Remove any transparency */
+        text-decoration:none!important;
+      }
+      
+      .resume-name{color:#0f172a!important;font-size:22pt!important}
+      .resume-title-line{color:#1d4ed8!important;font-size:12pt!important}
+      .resume-section-title{
+        color:#1d4ed8!important;border-bottom:1pt solid #cbd5e1!important;
+        page-break-after:avoid!important;
+      }
+      .resume-header-section{border-bottom:2pt solid #1d4ed8!important}
+      .skill-chip{background:#f1f5f9!important;color:#1e293b!important;border:1pt solid #cbd5e1!important}
+      
+      /* Fix Pagination */
+      .resume-section { page-break-inside: auto !important; }
+      .resume-item, .cert-item { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom:10pt!important; }
+      h1, h2, h3, h4 { page-break-after: avoid !important; }
+    }
+
+
+    /* ─── Misc Utility ─── */
+    .divider{height:1px;background:var(--border);margin:.25rem 0}
+    .cloud-arch-box{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:12px;padding:1.1rem 1.35rem;font-family:monospace;
+      font-size:.8rem;color:var(--text-secondary);line-height:1.7;
+      text-align:left;max-width:680px;width:100%;margin-top:3rem;
+    }
+    .cloud-arch-box span{color:var(--accent)}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+// ═════════════════════════════════════════════════════════
+// DATA LAYER — Browser LocalStorage Draft Persistence
+// ═════════════════════════════════════════════════════════
+const DRAFT_KEY = 'cloudfolio_resume_draft_v2';
+const ANALYTICS_KEY = 'cloudfolio_analytics_v2';
+
+function saveDraft(data) {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ data, ts: Date.now() }));
+    return true;
+  } catch { return false; }
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw).data : null;
+  } catch { return null; }
+}
+
+function getSessionAnalytics() {
+  try {
+    const raw = localStorage.getItem(ANALYTICS_KEY);
+    return raw ? JSON.parse(raw) : { views: 0, downloads: 0 };
+  } catch { return { views: 0, downloads: 0 }; }
+}
+
+function updateSessionAnalytics(type) {
+  const a = getSessionAnalytics();
+  if (type === 'view') a.views++;
+  else if (type === 'download') a.downloads++;
+  try { localStorage.setItem(ANALYTICS_KEY, JSON.stringify(a)); } catch {}
+
+  // /api/analytics is a Vercel Serverless Function — it only runs under Vercel's
+  // infrastructure, not under Python's http.server (which returns 501 for POST).
+  // On localhost we rely entirely on the localStorage session counter above.
+  // On Vercel (production), the fetch fires and the serverless function handles it.
+  const isLocalDev = (
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1' ||
+    location.hostname === ''
+  );
+  if (!isLocalDev) {
+    const action = type === 'view' ? 'increment_views' : 'increment_downloads';
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    }).catch(() => {
+      // Silently ignore network failures — localStorage counter is already updated.
+    });
+  }
+
+  return a;
+}
+
+// ═════════════════════════════════════════════════════════
+// DEFAULT RESUME DATA
+// ═════════════════════════════════════════════════════════
+const DEFAULT_DATA = {
+  personal: {
+    fullName: 'Alex Rivera',
+    title: 'Cloud Architect & Full-Stack Developer',
+    email: 'alex.rivera@cloudfolio.dev',
+    phone: '+1 (555) 234-5678',
+    location: 'Seattle, WA',
+    github: 'https://github.com/alexrivera-cloud',
+    linkedin: 'https://linkedin.com/in/alexrivera',
+    portfolio: '',
+    summary: 'Innovative Cloud Solutions Architect with 3+ years designing serverless APIs, CI/CD pipelines, and responsive web applications. Passionate about scalable cloud hosting, edge computing, and user-centric design.',
+  },
+  experience: [
+    {
+      id: 'e1', company: 'CloudScale Systems', role: 'Cloud Engineering Intern',
+      startDate: 'Jun 2025', endDate: 'Present',
+      description: 'Designed and deployed serverless web APIs and static site hosting pipelines on cloud edge infrastructure, reducing latency by 45%.',
+      highlights: [
+        'Automated GitHub Actions CI/CD pipelines for 12 microservices achieving 99.9% uptime.',
+        'Implemented CDN caching strategies reducing bandwidth costs by $1.2k/month.',
+      ]
+    },
+    {
+      id: 'e2', company: 'Apex Tech Labs', role: 'Junior Web Developer',
+      startDate: 'Jan 2024', endDate: 'May 2025',
+      description: 'Built responsive frontend interfaces using React and modern CSS, delivering 15+ client projects on time.',
+      highlights: [
+        'Integrated RESTful APIs for real-time analytics dashboards serving 50,000+ users.',
+        'Achieved WCAG AA accessibility compliance across all delivered components.',
+      ]
+    }
+  ],
+  education: [
+    {
+      id: 'ed1', institution: 'State University of Technology',
+      degree: 'B.S. Computer Science (Cloud Computing Concentration)',
+      year: '2026', gpa: '3.9 / 4.0',
+      courses: 'Cloud Systems Architecture, Serverless Computing, Web Engineering, Distributed Systems'
+    }
+  ],
+  skills: [
+    'Cloud Hosting (Vercel / Netlify)', 'Serverless Computing', 'React.js', 'Node.js',
+    'Docker & Kubernetes', 'CI/CD Pipelines', 'REST APIs', 'Git & GitHub Actions',
+    'CSS Glassmorphism', 'Python', 'PostgreSQL', 'AWS Fundamentals'
+  ],
+  projects: [
+    {
+      id: 'p1', title: 'Serverless Log Monitor',
+      tech: 'AWS Lambda, Node.js, React, CloudWatch',
+      description: 'Real-time log ingestion system handling 10k events/sec with serverless compute and an analytics dashboard.',
+      link: 'https://github.com/alexrivera-cloud/log-monitor'
+    },
+    {
+      id: 'p2', title: 'CloudFolio — This App',
+      tech: 'React, Vercel Edge Hosting, CSS Glassmorphism',
+      description: 'Cloud Resume Builder & Portfolio with instant PDF export, multi-theme engine, and serverless analytics.',
+      link: 'https://github.com/alexrivera-cloud/cloudfolio'
+    }
+  ],
+  certifications: [
+    { id: 'c1', name: 'AWS Cloud Practitioner Essentials', issuer: 'Amazon Web Services', year: '2025' },
+    { id: 'c2', name: 'Google IT Support Certificate', issuer: 'Coursera / Google', year: '2024' }
+  ],
+  achievements: [
+    'Dean\'s List — Spring 2025 & Fall 2024',
+    '1st Place — University Cloud Computing Hackathon 2025',
+    'Open Source Contributor — 3 accepted PRs to serverless-framework repository',
+  ],
+  activeTheme: 'dark-glass',
+};
+
+// ═════════════════════════════════════════════════════════
+// VALIDATION
+// ═════════════════════════════════════════════════════════
+function validatePersonal(p) {
+  const errors = {};
+  if (!p.fullName.trim()) errors.fullName = 'Full name is required.';
+  if (!p.email.trim()) errors.email = 'Email is required.';
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) errors.email = 'Enter a valid email address.';
+  if (p.phone && !/^[+\d\s\-().]{7,20}$/.test(p.phone)) errors.phone = 'Enter a valid phone number.';
+  if (p.github && !/^https?:\/\//.test(p.github)) errors.github = 'Must be a full URL (https://…)';
+  if (p.linkedin && !/^https?:\/\//.test(p.linkedin)) errors.linkedin = 'Must be a full URL (https://…)';
+  return errors;
+}
+
+// ═════════════════════════════════════════════════════════
+// ACTION VERB ENHANCER (Rule-based — NOT AI)
+// ═════════════════════════════════════════════════════════
+const ACTION_VERBS = [
+  'Architected and deployed','Engineered high-performance','Streamlined and optimized',
+  'Automated end-to-end','Accelerated delivery of','Led the development of',
+  'Designed and implemented','Built and maintained',
+];
+function enhanceBulletWithActionVerbs(text) {
+  if (!text || text.trim().length < 4) return text;
+  const words = text.trim().split(' ');
+  const verb = ACTION_VERBS[Math.floor(Math.random() * ACTION_VERBS.length)];
+  const body = words.length <= 3 ? words.join(' ').toLowerCase() : words.slice(1).join(' ');
+  return `${verb} ${body}.`;
+}
+
+// ═════════════════════════════════════════════════════════
+// ID GENERATOR
+// ═════════════════════════════════════════════════════════
+function uid() { return Math.random().toString(36).slice(2,9); }
+
+// ═════════════════════════════════════════════════════════
+// COMPONENTS
+// ═════════════════════════════════════════════════════════
+
+// ── Toast System ──
+function ToastContainer({ toasts }) {
+  return (
+    <div className="toast-stack">
+      {toasts.map(t => (
+        <div key={t.id} className={`toast ${t.type === 'error' ? 'toast-error' : ''}`}>
+          <span>{t.type === 'error' ? '⚠️' : '✅'}</span>
+          <span>{t.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── QR Modal ──
+function QRModal({ url, onClose, onToast }) {
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&format=png&color=000000&bgcolor=ffffff`;
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-title">☁️ Share Portfolio</div>
+        <p className="modal-sub">
+          Scan the QR code or copy the link to share your cloud-hosted portfolio.
+          <br/><strong style={{color:'var(--accent)',fontSize:'.78rem'}}>Tip: Deploy to Vercel for a permanent shareable URL.</strong>
+        </p>
+        <div className="qr-frame">
+          <img src={qrSrc} width={180} height={180} alt="Portfolio QR Code" />
+        </div>
+        <input readOnly value={url} style={{textAlign:'center',fontSize:'.82rem',cursor:'pointer'}}
+          onClick={e => e.target.select()} />
+        <div style={{display:'flex',gap:'.75rem',width:'100%'}}>
+          <button className="btn btn-primary" style={{flex:1,justifyContent:'center'}}
+            onClick={() => { navigator.clipboard.writeText(url); onToast('📋 URL copied to clipboard!'); }}>
+            📋 Copy Link
+          </button>
+          <button className="btn btn-secondary" style={{flex:1,justifyContent:'center'}} onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Navbar ──
+function Navbar({ page, onNavigate, activeTheme, onThemeChange, analytics, onDownload, onShare }) {
+  return (
+    <nav className="navbar" role="banner">
+      <div className="nav-brand" onClick={() => onNavigate('landing')} title="Go to Home">
+        <div className="nav-logo" aria-hidden="true">☁️</div>
+        <div>
+          <div className="nav-title">CloudFolio</div>
+          <div className="nav-sub">Cloud Resume Builder</div>
+        </div>
+      </div>
+      <div className="nav-right">
+        {page === 'builder' && (
+          <>
+            <div className="analytics-badge" title="Serverless session analytics — resets on cold start">
+              <span className="pulse" aria-hidden="true"></span>
+              <span>👁 {analytics.views} views</span>
+              <span aria-hidden="true">·</span>
+              <span>📥 {analytics.downloads} downloads</span>
+            </div>
+            <div className="theme-sel">
+              <span aria-hidden="true">🎨</span>
+              <select value={activeTheme} onChange={e => onThemeChange(e.target.value)}
+                aria-label="Select UI theme">
+                <option value="dark-glass">Dark Glass</option>
+                <option value="corporate">Corporate Light</option>
+                <option value="neon">Cyber Neon</option>
+              </select>
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={onShare} aria-label="Share portfolio QR code">
+              🔗 Share
+            </button>
+            <button className="btn btn-primary btn-sm" onClick={onDownload} aria-label="Download PDF resume">
+              📄 PDF
+            </button>
+          </>
+        )}
+        {page !== 'builder' && (
+          <button className="btn btn-primary btn-sm" onClick={() => onNavigate('builder')}>
+            🚀 Start Building
+          </button>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// ── Landing Page ──
+function Landing({ onStart }) {
+  const features = [
+    { icon:'📝', title:'Live Resume Builder', desc:'Fill in your details and watch your professional resume update instantly in real-time — no page reloads.' },
+    { icon:'🌐', title:'Interactive Portfolio', desc:'Toggle to a modern interactive web portfolio view — ready to share with recruiters in one click.' },
+    { icon:'🎨', title:'3 Visual Themes', desc:'Switch between Dark Glass, Corporate Light, and Cyber Neon — CSS variables update every element instantly.' },
+    { icon:'☁️', title:'Cloud Hosting (Vercel)', desc:'Deploy to Vercel in one click via GitHub. Global CDN, automatic HTTPS, zero server management.' },
+    { icon:'📄', title:'PDF Export', desc:'Download a clean, print-ready A4 resume via CSS @media print — no layout breaks, no hidden elements.' },
+    { icon:'📊', title:'Serverless Analytics', desc:'/api/analytics is a real Vercel Serverless Function that tracks page views and download counts per session.' },
+    { icon:'🔗', title:'QR Code Sharing', desc:'Generate a dynamic QR code instantly — let recruiters scan your cloud-hosted portfolio live.' },
+    { icon:'💾', title:'Auto-Save Draft', desc:'Your work is saved to browser localStorage automatically — resume where you left off.' },
+  ];
+  return (
+    <main className="landing" aria-label="Landing page">
+      <div className="landing-badge">☁️ Topic 24 — Cloud Hosting</div>
+      <h1>Build Your Resume.<br/><span>Deploy to the Cloud.</span></h1>
+      <p className="landing-sub">
+        CloudFolio transforms your career details into a polished PDF resume AND a live cloud-hosted
+        interactive portfolio — all within one browser tab.
+      </p>
+      <div className="landing-actions">
+        <button className="btn btn-primary btn-lg" onClick={onStart} id="cta-start">
+          🚀 Launch Builder
+        </button>
+        {/* TODO: Replace the href below with your actual GitHub repository URL before submission */}
+        <a className="btn btn-secondary btn-lg" href="https://github.com/YOUR-USERNAME/cloudfolio" target="_blank" rel="noreferrer">
+          📂 View on GitHub
+        </a>
+      </div>
+
+      <div className="cloud-arch-box" role="img" aria-label="Cloud architecture diagram">
+        <div><span>☁️ Cloud Architecture</span></div>
+        <div style={{marginTop:'.5rem',lineHeight:2}}>
+          <span>User Browser</span> → HTTPS → <span>Vercel CDN Edge</span> (Static Hosting)<br/>
+          <span>Vercel CDN Edge</span> → routes /api/* → <span>Vercel Serverless Function</span> (/api/analytics)<br/>
+          <span>Browser</span> → localStorage → <span>Local Draft Persistence</span> (resume data, session analytics)<br/>
+          <span>QR Share Link</span> → <span>Vercel Cloud URL</span> → accessible globally
+        </div>
+      </div>
+
+      <div className="features-grid" role="list">
+        {features.map(f => (
+          <article key={f.title} className="feature-card" role="listitem">
+            <div className="feature-icon" aria-hidden="true">{f.icon}</div>
+            <div className="feature-title">{f.title}</div>
+            <div className="feature-desc">{f.desc}</div>
+          </article>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+// ── Resume Preview Component ──
+function ResumeView({ data }) {
+  const { personal: p, experience, education, skills, projects, certifications, achievements } = data;
+  return (
+    <div className="resume-doc" id="resume-printable" role="document" aria-label="Resume preview">
+      <header className="resume-header-section">
+        <h1 className="resume-name">{p.fullName || 'Your Name'}</h1>
+        <div className="resume-title-line">{p.title || 'Professional Title'}</div>
+        <div className="resume-contact-row">
+          {p.email    && <span className="resume-contact-item">📧 <a href={`mailto:${p.email}`}>{p.email}</a></span>}
+          {p.phone    && <span className="resume-contact-item">📱 {p.phone}</span>}
+          {p.location && <span className="resume-contact-item">📍 {p.location}</span>}
+          {p.github   && <span className="resume-contact-item">💻 <a href={p.github} target="_blank" rel="noreferrer">GitHub</a></span>}
+          {p.linkedin && <span className="resume-contact-item">🔗 <a href={p.linkedin} target="_blank" rel="noreferrer">LinkedIn</a></span>}
+          {p.portfolio && <span className="resume-contact-item">🌐 <a href={p.portfolio} target="_blank" rel="noreferrer">Portfolio</a></span>}
+        </div>
+      </header>
+
+      {p.summary && (
+        <section className="resume-section" aria-label="Professional Summary">
+          <h2 className="resume-section-title">Professional Summary</h2>
+          <p className="resume-item-desc">{p.summary}</p>
+        </section>
+      )}
+
+      {experience.length > 0 && (
+        <section className="resume-section" aria-label="Work Experience">
+          <h2 className="resume-section-title">Work Experience</h2>
+          {experience.map(e => (
+            <div key={e.id} className="resume-item">
+              <div className="resume-item-head">
+                <span className="resume-item-title">{e.role || 'Role'}</span>
+                <span className="resume-item-right">{e.startDate} – {e.endDate}</span>
+              </div>
+              <div className="resume-item-sub">{e.company}</div>
+              {e.description && <p className="resume-item-desc">{e.description}</p>}
+              {e.highlights && e.highlights.filter(h=>h.trim()).length > 0 && (
+                <ul className="resume-highlights">
+                  {e.highlights.filter(h=>h.trim()).map((h,i) => <li key={i}>{h}</li>)}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {education.length > 0 && (
+        <section className="resume-section" aria-label="Education">
+          <h2 className="resume-section-title">Education</h2>
+          {education.map(e => (
+            <div key={e.id} className="resume-item">
+              <div className="resume-item-head">
+                <span className="resume-item-title">{e.degree || 'Degree'}</span>
+                <span className="resume-item-right">{e.year}</span>
+              </div>
+              <div className="resume-item-sub">{e.institution}{e.gpa ? ` · GPA: ${e.gpa}` : ''}</div>
+              {e.courses && <p className="resume-item-desc" style={{fontStyle:'italic',marginTop:'.15rem'}}>Relevant courses: {e.courses}</p>}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {skills.length > 0 && (
+        <section className="resume-section" aria-label="Skills">
+          <h2 className="resume-section-title">Technical Skills</h2>
+          <div className="skills-wrap">
+            {skills.map((s,i) => <span key={i} className="skill-chip">{s}</span>)}
+          </div>
+        </section>
+      )}
+
+      {projects.length > 0 && (
+        <section className="resume-section" aria-label="Projects">
+          <h2 className="resume-section-title">Projects</h2>
+          {projects.map(pr => (
+            <div key={pr.id} className="resume-item">
+              <div className="resume-item-head">
+                <span className="resume-item-title">{pr.title}</span>
+                {pr.link && <a href={pr.link} target="_blank" rel="noreferrer" className="resume-item-right" style={{fontSize:'.78rem'}}>🔗 Link</a>}
+              </div>
+              <div className="resume-item-sub">{pr.tech}</div>
+              <p className="resume-item-desc">{pr.description}</p>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {certifications.length > 0 && (
+        <section className="resume-section" aria-label="Certifications">
+          <h2 className="resume-section-title">Certifications</h2>
+          {certifications.map(c => (
+            <div key={c.id} className="cert-item">
+              <span><strong>{c.name}</strong> — {c.issuer}</span>
+              <span className="resume-item-right">{c.year}</span>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {achievements.length > 0 && achievements.filter(a=>a.trim()).length > 0 && (
+        <section className="resume-section" aria-label="Achievements">
+          <h2 className="resume-section-title">Achievements</h2>
+          <ul className="resume-highlights">
+            {achievements.filter(a=>a.trim()).map((a,i) => <li key={i}>{a}</li>)}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
+}
+
+// ── Portfolio View Component ──
+function PortfolioView({ data }) {
+  const { personal: p, experience, skills, projects, certifications, achievements } = data;
+  const initials = p.fullName.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() || 'CF';
+  return (
+    <div className="portfolio">
+      <section className="portfolio-hero" aria-label="Portfolio hero">
+        <div className="portfolio-avatar" aria-hidden="true">{initials}</div>
+        <h1 className="portfolio-name">{p.fullName || 'Your Name'}</h1>
+        <div className="portfolio-role">{p.title || 'Professional Title'}</div>
+        <p className="portfolio-bio">{p.summary || 'Cloud engineer passionate about scalable serverless applications.'}</p>
+        <div className="portfolio-links">
+          {p.github    && <a className="btn btn-secondary btn-sm" href={p.github} target="_blank" rel="noreferrer">💻 GitHub</a>}
+          {p.linkedin  && <a className="btn btn-secondary btn-sm" href={p.linkedin} target="_blank" rel="noreferrer">🔗 LinkedIn</a>}
+          {p.portfolio && <a className="btn btn-secondary btn-sm" href={p.portfolio} target="_blank" rel="noreferrer">🌐 Website</a>}
+          {p.email     && <a className="btn btn-primary btn-sm" href={`mailto:${p.email}`}>✉️ Contact</a>}
+        </div>
+      </section>
+
+      {skills.length > 0 && (
+        <div className="portfolio-card" aria-label="Skills section">
+          <div className="portfolio-card-title">⚡ Tech Stack & Skills</div>
+          <div className="skills-wrap">
+            {skills.map((s,i) => <span key={i} className="skill-chip" style={{fontSize:'.82rem',padding:'.32rem .75rem'}}>{s}</span>)}
+          </div>
+        </div>
+      )}
+
+      {projects.length > 0 && (
+        <section aria-label="Featured projects">
+          <div style={{fontFamily:"'Outfit',sans-serif",fontSize:'1.15rem',fontWeight:800,marginBottom:'.85rem'}}>
+            🚀 Featured Projects
+          </div>
+          <div className="proj-grid">
+            {projects.map(pr => (
+              <div key={pr.id} className="proj-card">
+                <div>
+                  <div style={{fontWeight:700,fontSize:'.95rem'}}>{pr.title}</div>
+                  <div className="proj-tech">{pr.tech}</div>
+                  <p className="proj-desc">{pr.description}</p>
+                </div>
+                {pr.link && (
+                  <a className="btn btn-secondary btn-sm" href={pr.link} target="_blank" rel="noreferrer"
+                    style={{justifyContent:'center',marginTop:'.25rem'}}>
+                    🔗 View
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {experience.length > 0 && (
+        <div className="portfolio-card" aria-label="Experience timeline">
+          <div className="portfolio-card-title">💼 Experience Timeline</div>
+          {experience.map(e => (
+            <div key={e.id} className="timeline-item">
+              <div className="tl-head">
+                <span className="tl-role">{e.role}</span>
+                <span className="tl-date">{e.startDate} – {e.endDate}</span>
+              </div>
+              <div className="tl-company">{e.company}</div>
+              {e.description && <p className="tl-desc">{e.description}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {certifications.length > 0 && (
+        <div className="portfolio-card" aria-label="Certifications">
+          <div className="portfolio-card-title">🏆 Certifications</div>
+          {certifications.map(c => (
+            <div key={c.id} className="cert-item">
+              <span><strong>{c.name}</strong> — {c.issuer}</span>
+              <span style={{fontSize:'.78rem',color:'var(--text-muted)'}}>{c.year}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {achievements.filter(a=>a.trim()).length > 0 && (
+        <div className="portfolio-card" aria-label="Achievements">
+          <div className="portfolio-card-title">⭐ Achievements</div>
+          <ul className="resume-highlights" style={{paddingLeft:'1.1rem',fontSize:'.88rem',color:'var(--text-secondary)',lineHeight:1.7}}>
+            {achievements.filter(a=>a.trim()).map((a,i) => <li key={i}>{a}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Form Sections ──
+function PersonalForm({ data, onChange, errors }) {
+  const set = (field, val) => onChange({ ...data, [field]: val });
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'1rem'}}>
+      {Object.keys(errors).length > 0 && (
+        <div className="validation-banner" role="alert">
+          ⚠️ <div>{Object.values(errors).map((e,i) => <div key={i}>• {e}</div>)}</div>
+        </div>
+      )}
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="fullName">Full Name *</label>
+          <input id="fullName" type="text" value={data.fullName} className={errors.fullName?'error-field':''}
+            onChange={e => set('fullName', e.target.value)} placeholder="e.g. Alex Rivera" />
+          {errors.fullName && <div className="field-error">⚠ {errors.fullName}</div>}
+        </div>
+        <div className="form-group">
+          <label htmlFor="title">Professional Title</label>
+          <input id="title" type="text" value={data.title}
+            onChange={e => set('title', e.target.value)} placeholder="e.g. Cloud Architect" />
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="email">Email *</label>
+          <input id="email" type="email" value={data.email} className={errors.email?'error-field':''}
+            onChange={e => set('email', e.target.value)} placeholder="you@example.com" />
+          {errors.email && <div className="field-error">⚠ {errors.email}</div>}
+        </div>
+        <div className="form-group">
+          <label htmlFor="phone">Phone</label>
+          <input id="phone" type="tel" value={data.phone} className={errors.phone?'error-field':''}
+            onChange={e => set('phone', e.target.value)} placeholder="+1 (555) 234-5678" />
+          {errors.phone && <div className="field-error">⚠ {errors.phone}</div>}
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="location">Location</label>
+          <input id="location" type="text" value={data.location}
+            onChange={e => set('location', e.target.value)} placeholder="City, State" />
+        </div>
+        <div className="form-group">
+          <label htmlFor="github">GitHub URL</label>
+          <input id="github" type="url" value={data.github} className={errors.github?'error-field':''}
+            onChange={e => set('github', e.target.value)} placeholder="https://github.com/…" />
+          {errors.github && <div className="field-error">⚠ {errors.github}</div>}
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="linkedin">LinkedIn URL</label>
+          <input id="linkedin" type="url" value={data.linkedin} className={errors.linkedin?'error-field':''}
+            onChange={e => set('linkedin', e.target.value)} placeholder="https://linkedin.com/in/…" />
+          {errors.linkedin && <div className="field-error">⚠ {errors.linkedin}</div>}
+        </div>
+        <div className="form-group">
+          <label htmlFor="portfolio">Portfolio Website</label>
+          <input id="portfolio" type="url" value={data.portfolio}
+            onChange={e => set('portfolio', e.target.value)} placeholder="https://yoursite.dev" />
+        </div>
+      </div>
+      <div className="form-group">
+        <label htmlFor="summary">Professional Summary</label>
+        <textarea id="summary" rows="4" value={data.summary}
+          onChange={e => set('summary', e.target.value)}
+          placeholder="A concise paragraph about your background, skills, and goals…" />
+      </div>
+    </div>
+  );
+}
+
+function ExperienceForm({ data, onChange }) {
+  const add = () => onChange([...data, {
+    id: uid(), company:'', role:'', startDate:'', endDate:'Present', description:'', highlights:['']
+  }]);
+  const remove = id => onChange(data.filter(e => e.id !== id));
+  const update = (id, field, val) => onChange(data.map(e => e.id===id ? {...e,[field]:val} : e));
+  const updateHL = (id, idx, val) => {
+    const exp = data.find(e => e.id===id);
+    const h = [...exp.highlights]; h[idx] = val;
+    update(id, 'highlights', h);
+  };
+  const addHL = id => {
+    const exp = data.find(e => e.id===id);
+    update(id, 'highlights', [...exp.highlights, '']);
+  };
+  const removeHL = (id, idx) => {
+    const exp = data.find(e => e.id===id);
+    update(id, 'highlights', exp.highlights.filter((_,i)=>i!==idx));
+  };
+  const enhance = (id, field) => {
+    const exp = data.find(e => e.id===id);
+    update(id, field, enhanceBulletWithActionVerbs(exp[field]));
+  };
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'.85rem'}}>
+      {data.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-icon">💼</div>
+          <div>No experience entries yet</div>
+          <button className="btn btn-secondary btn-sm" onClick={add}>➕ Add First Entry</button>
+        </div>
+      )}
+      {data.map(exp => (
+        <div key={exp.id} className="item-card">
+          <div className="item-card-head">
+            <span className="item-card-label">{exp.role || 'New Experience'}</span>
+            <button className="btn btn-danger btn-sm" onClick={()=>remove(exp.id)}>🗑 Remove</button>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Company</label>
+              <input value={exp.company} onChange={e=>update(exp.id,'company',e.target.value)} placeholder="Company name" />
+            </div>
+            <div className="form-group">
+              <label>Job Title</label>
+              <input value={exp.role} onChange={e=>update(exp.id,'role',e.target.value)} placeholder="Your role" />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Start Date</label>
+              <input value={exp.startDate} onChange={e=>update(exp.id,'startDate',e.target.value)} placeholder="Jan 2024" />
+            </div>
+            <div className="form-group">
+              <label>End Date</label>
+              <input value={exp.endDate} onChange={e=>update(exp.id,'endDate',e.target.value)} placeholder="Present" />
+            </div>
+          </div>
+          <div className="form-group">
+            <div className="label-row">
+              <label>Description</label>
+              <span className="enhancer-chip" title="Reframe using action verbs (rule-based)"
+                onClick={()=>enhance(exp.id,'description')}>✨ Action Verbs</span>
+            </div>
+            <textarea rows="2" value={exp.description}
+              onChange={e=>update(exp.id,'description',e.target.value)}
+              placeholder="Brief description of your responsibilities and impact…" />
+          </div>
+          <div className="form-group">
+            <div className="label-row">
+              <label>Key Highlights</label>
+              <button className="btn btn-secondary btn-sm" onClick={()=>addHL(exp.id)}>+ Add</button>
+            </div>
+            {exp.highlights.map((h,i) => (
+              <div key={i} style={{display:'flex',gap:'.4rem',marginTop:'.3rem',alignItems:'flex-start'}}>
+                <input value={h} onChange={e=>updateHL(exp.id,i,e.target.value)}
+                  placeholder="e.g. Reduced API latency by 40% using CDN caching" />
+                <button className="btn btn-danger btn-sm" onClick={()=>removeHL(exp.id,i)}
+                  style={{flexShrink:0}} aria-label="Remove highlight">✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      {data.length > 0 && (
+        <button className="btn btn-secondary" onClick={add} style={{alignSelf:'flex-start'}}>
+          ➕ Add Experience
+        </button>
+      )}
+    </div>
+  );
+}
+
+function EducationForm({ data, onChange }) {
+  const add = () => onChange([...data, { id:uid(), institution:'', degree:'', year:'', gpa:'', courses:'' }]);
+  const remove = id => onChange(data.filter(e => e.id !== id));
+  const update = (id, field, val) => onChange(data.map(e => e.id===id ? {...e,[field]:val} : e));
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'.85rem'}}>
+      {data.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-icon">🎓</div>
+          <div>No education entries yet</div>
+          <button className="btn btn-secondary btn-sm" onClick={add}>➕ Add First Entry</button>
+        </div>
+      )}
+      {data.map(ed => (
+        <div key={ed.id} className="item-card">
+          <div className="item-card-head">
+            <span className="item-card-label">{ed.institution || 'New Education'}</span>
+            <button className="btn btn-danger btn-sm" onClick={()=>remove(ed.id)}>🗑 Remove</button>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Institution</label>
+              <input value={ed.institution} onChange={e=>update(ed.id,'institution',e.target.value)} placeholder="University name" />
+            </div>
+            <div className="form-group">
+              <label>Degree / Certificate</label>
+              <input value={ed.degree} onChange={e=>update(ed.id,'degree',e.target.value)} placeholder="B.S. Computer Science" />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Graduation Year</label>
+              <input value={ed.year} onChange={e=>update(ed.id,'year',e.target.value)} placeholder="2026" />
+            </div>
+            <div className="form-group">
+              <label>GPA (optional)</label>
+              <input value={ed.gpa} onChange={e=>update(ed.id,'gpa',e.target.value)} placeholder="3.8 / 4.0" />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Relevant Courses (optional)</label>
+            <input value={ed.courses} onChange={e=>update(ed.id,'courses',e.target.value)} placeholder="Cloud Computing, Web Engineering…" />
+          </div>
+        </div>
+      ))}
+      {data.length > 0 && (
+        <button className="btn btn-secondary" onClick={add} style={{alignSelf:'flex-start'}}>
+          ➕ Add Education
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SkillsForm({ data, onChange }) {
+  const [raw, setRaw] = React.useState(data.join(', '));
+  const handleChange = v => {
+    setRaw(v);
+    onChange(v.split(',').map(s=>s.trim()).filter(Boolean));
+  };
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'.85rem'}}>
+      <div className="form-group">
+        <label htmlFor="skills-input">Skills & Technologies (comma-separated)</label>
+        <textarea id="skills-input" rows="5" value={raw} onChange={e=>handleChange(e.target.value)}
+          placeholder="React.js, Node.js, AWS, Docker, Git, REST APIs, Python…" />
+        <div style={{fontSize:'.75rem',color:'var(--text-muted)',marginTop:'.3rem'}}>
+          Separate each skill with a comma. Preview updates live.
+        </div>
+      </div>
+      <div className="skills-wrap">
+        {data.map((s,i) => <span key={i} className="skill-chip">{s}</span>)}
+      </div>
+      {data.length === 0 && (
+        <div className="empty-state" style={{padding:'1rem'}}>
+          <div>Skills will appear here as you type above.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectsForm({ data, onChange }) {
+  const add = () => onChange([...data, { id:uid(), title:'', tech:'', description:'', link:'' }]);
+  const remove = id => onChange(data.filter(p => p.id !== id));
+  const update = (id, field, val) => onChange(data.map(p => p.id===id ? {...p,[field]:val} : p));
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'.85rem'}}>
+      {data.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-icon">🚀</div>
+          <div>No projects yet</div>
+          <button className="btn btn-secondary btn-sm" onClick={add}>➕ Add First Project</button>
+        </div>
+      )}
+      {data.map(pr => (
+        <div key={pr.id} className="item-card">
+          <div className="item-card-head">
+            <span className="item-card-label">{pr.title || 'New Project'}</span>
+            <button className="btn btn-danger btn-sm" onClick={()=>remove(pr.id)}>🗑 Remove</button>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Project Title</label>
+              <input value={pr.title} onChange={e=>update(pr.id,'title',e.target.value)} placeholder="Serverless API Gateway" />
+            </div>
+            <div className="form-group">
+              <label>Tech Stack</label>
+              <input value={pr.tech} onChange={e=>update(pr.id,'tech',e.target.value)} placeholder="React, Node.js, AWS Lambda" />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>GitHub / Live Link</label>
+            <input type="url" value={pr.link} onChange={e=>update(pr.id,'link',e.target.value)} placeholder="https://github.com/…" />
+          </div>
+          <div className="form-group">
+            <label>Description</label>
+            <textarea rows="2" value={pr.description} onChange={e=>update(pr.id,'description',e.target.value)}
+              placeholder="What does this project do? What problem does it solve?" />
+          </div>
+        </div>
+      ))}
+      {data.length > 0 && (
+        <button className="btn btn-secondary" onClick={add} style={{alignSelf:'flex-start'}}>
+          ➕ Add Project
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CertificationsForm({ data, onChange }) {
+  const add = () => onChange([...data, { id:uid(), name:'', issuer:'', year:'' }]);
+  const remove = id => onChange(data.filter(c => c.id !== id));
+  const update = (id, field, val) => onChange(data.map(c => c.id===id ? {...c,[field]:val} : c));
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'.85rem'}}>
+      {data.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-icon">🏆</div>
+          <div>No certifications yet</div>
+          <button className="btn btn-secondary btn-sm" onClick={add}>➕ Add Certification</button>
+        </div>
+      )}
+      {data.map(c => (
+        <div key={c.id} className="item-card">
+          <div className="item-card-head">
+            <span className="item-card-label">{c.name || 'New Certification'}</span>
+            <button className="btn btn-danger btn-sm" onClick={()=>remove(c.id)}>🗑 Remove</button>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Certificate Name</label>
+              <input value={c.name} onChange={e=>update(c.id,'name',e.target.value)} placeholder="AWS Cloud Practitioner" />
+            </div>
+            <div className="form-group">
+              <label>Issuing Body</label>
+              <input value={c.issuer} onChange={e=>update(c.id,'issuer',e.target.value)} placeholder="Amazon Web Services" />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Year Earned</label>
+            <input value={c.year} onChange={e=>update(c.id,'year',e.target.value)} placeholder="2025" style={{maxWidth:'140px'}} />
+          </div>
+        </div>
+      ))}
+      {data.length > 0 && (
+        <button className="btn btn-secondary" onClick={add} style={{alignSelf:'flex-start'}}>
+          ➕ Add Certification
+        </button>
+      )}
+    </div>
+  );
+}
+
+function AchievementsForm({ data, onChange }) {
+  const update = (i, val) => { const a=[...data]; a[i]=val; onChange(a); };
+  const add = () => onChange([...data, '']);
+  const remove = i => onChange(data.filter((_,idx)=>idx!==i));
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'.7rem'}}>
+      {data.length===0 && (
+        <div className="empty-state" style={{padding:'1rem'}}>
+          <div className="empty-icon">⭐</div>
+          <div>No achievements yet</div>
+          <button className="btn btn-secondary btn-sm" onClick={add}>➕ Add Achievement</button>
+        </div>
+      )}
+      {data.map((a,i) => (
+        <div key={i} style={{display:'flex',gap:'.4rem',alignItems:'center'}}>
+          <input value={a} onChange={e=>update(i,e.target.value)}
+            placeholder="e.g. Dean's List – Spring 2025" />
+          <button className="btn btn-danger btn-sm" onClick={()=>remove(i)} aria-label="Remove achievement">✕</button>
+        </div>
+      ))}
+      {data.length>0 && (
+        <button className="btn btn-secondary btn-sm" onClick={add} style={{alignSelf:'flex-start',marginTop:'.25rem'}}>
+          ➕ Add Achievement
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Builder Page ──
+function Builder({ data, onChange, activeTheme, onThemeChange, onDownload, onShare, analytics }) {
+  const [tab, setTab] = React.useState('personal');
+  const [viewMode, setViewMode] = React.useState('resume');
+  const [personalErrors, setPersonalErrors] = React.useState({});
+  const [saveStatus, setSaveStatus] = React.useState('All changes saved locally');
+
+  const tabs = [
+    {id:'personal', label:'👤 Personal'},
+    {id:'experience', label:`💼 Experience (${data.experience.length})`},
+    {id:'education', label:`🎓 Education (${data.education.length})`},
+    {id:'skills', label:`⚡ Skills (${data.skills.length})`},
+    {id:'projects', label:`🚀 Projects (${data.projects.length})`},
+    {id:'certifications', label:`🏆 Certs (${data.certifications.length})`},
+    {id:'achievements', label:`⭐ Achievements (${data.achievements.filter(a=>a.trim()).length})`},
+  ];
+
+  const handleChange = (newData) => {
+    // Validate personal when on that tab
+    if (tab === 'personal') setPersonalErrors(validatePersonal(newData.personal));
+    onChange(newData);
+    setSaveStatus('Saving…');
+    setTimeout(() => setSaveStatus('✓ Draft saved locally'), 600);
+  };
+
+  return (
+    <div className="builder">
+      {/* ── LEFT: EDITOR ── */}
+      <div className="editor-panel">
+        <div className="tab-bar" role="tablist" aria-label="Resume section tabs">
+          {tabs.map(t => (
+            <button key={t.id} className={`tab-btn ${tab===t.id?'active':''}`}
+              role="tab" aria-selected={tab===t.id} onClick={()=>setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="form-scroll" role="tabpanel">
+          {tab==='personal'      && <PersonalForm data={data.personal} errors={personalErrors}
+              onChange={p => handleChange({...data, personal:p})} />}
+          {tab==='experience'    && <ExperienceForm data={data.experience}
+              onChange={v => handleChange({...data, experience:v})} />}
+          {tab==='education'     && <EducationForm data={data.education}
+              onChange={v => handleChange({...data, education:v})} />}
+          {tab==='skills'        && <SkillsForm data={data.skills}
+              onChange={v => handleChange({...data, skills:v})} />}
+          {tab==='projects'      && <ProjectsForm data={data.projects}
+              onChange={v => handleChange({...data, projects:v})} />}
+          {tab==='certifications'&& <CertificationsForm data={data.certifications}
+              onChange={v => handleChange({...data, certifications:v})} />}
+          {tab==='achievements'  && <AchievementsForm data={data.achievements}
+              onChange={v => handleChange({...data, achievements:v})} />}
+        </div>
+        <div style={{padding:'.55rem 1rem',borderTop:'1px solid var(--border)',background:'var(--bg-base)'}}>
+          <span className="save-status">💾 {saveStatus}</span>
+        </div>
+      </div>
+
+      {/* ── RIGHT: PREVIEW ── */}
+      <div className="preview-panel">
+        <div className="preview-bar">
+          <div className="preview-bar-left">
+            <span style={{fontSize:'.85rem',fontWeight:700}}>Live Preview</span>
+            <span className="preview-badge">{viewMode==='resume'?'A4 Document':'Web Portfolio'}</span>
+          </div>
+          <div className="view-toggle" role="group" aria-label="Preview mode">
+            <button className={`vt-btn ${viewMode==='resume'?'active':''}`}
+              onClick={()=>setViewMode('resume')} aria-pressed={viewMode==='resume'}>
+              📄 Resume
+            </button>
+            <button className={`vt-btn ${viewMode==='portfolio'?'active':''}`}
+              onClick={()=>setViewMode('portfolio')} aria-pressed={viewMode==='portfolio'}>
+              🌐 Portfolio
+            </button>
+          </div>
+        </div>
+        <div className="preview-scroll">
+          {viewMode==='resume'
+            ? <ResumeView data={data} />
+            : <PortfolioView data={data} />
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════
+// ROOT APP
+// ═════════════════════════════════════════════════════════
+function App() {
+  const [page, setPage] = React.useState('landing');
+  const [resumeData, setResumeData] = React.useState(() => loadDraft() || DEFAULT_DATA);
+  const [activeTheme, setActiveTheme] = React.useState(() => (loadDraft() || DEFAULT_DATA).activeTheme || 'dark-glass');
+  const [analytics, setAnalytics] = React.useState(() => getSessionAnalytics());
+  const [toasts, setToasts] = React.useState([]);
+  const [showQR, setShowQR] = React.useState(false);
+
+  // Apply theme to <html>
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', activeTheme);
+  }, [activeTheme]);
+
+  // Track page view on mount
+  React.useEffect(() => {
+    setAnalytics(updateSessionAnalytics('view'));
+  }, []);
+
+  const addToast = (message, type='success') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  };
+
+  const handleDataChange = (newData) => {
+    setResumeData(newData);
+    saveDraft(newData);
+  };
+
+  const handleThemeChange = (t) => {
+    setActiveTheme(t);
+    handleDataChange({ ...resumeData, activeTheme: t });
+    addToast(`🎨 Theme changed to ${t === 'dark-glass' ? 'Dark Glass' : t === 'corporate' ? 'Corporate Light' : 'Cyber Neon'}`);
+  };
+
+  const handleDownload = () => {
+    const updated = updateSessionAnalytics('download');
+    setAnalytics(updated);
+    addToast('📄 Opening PDF export dialog…');
+    setTimeout(() => window.print(), 350);
+  };
+
+  const handleNavigate = (p) => {
+    setPage(p);
+    window.scrollTo(0,0);
+  };
+
+  const shareUrl = window.location.href;
+
+  return (
+    <>
+      <Navbar
+        page={page}
+        onNavigate={handleNavigate}
+        activeTheme={activeTheme}
+        onThemeChange={handleThemeChange}
+        analytics={analytics}
+        onDownload={handleDownload}
+        onShare={() => setShowQR(true)}
+      />
+
+      {page === 'landing' && <Landing onStart={() => handleNavigate('builder')} />}
+      {page === 'builder' && (
+        <Builder
+          data={resumeData}
+          onChange={handleDataChange}
+          activeTheme={activeTheme}
+          onThemeChange={handleThemeChange}
+          onDownload={handleDownload}
+          onShare={() => setShowQR(true)}
+          analytics={analytics}
+        />
+      )}
+
+      {showQR && (
+        <QRModal url={shareUrl} onClose={() => setShowQR(false)} onToast={addToast} />
+      )}
+
+      <ToastContainer toasts={toasts} />
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+/* Dedicated Print-Ready CSS Engine for PDF Export */
+
+@media print {
+  /* Define A4 page explicitly */
+  @page {
+    size: A4 portrait;
+  }
+
+  /* Hide all non-printable UI chrome */
+  body * {
+    visibility: hidden;
+  }
+  
+  .navbar, .editor-panel, .preview-header, .btn, .modal-overlay, .toast-container {
+    display: none !important;
+  }
+  
+  .app-container {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  
+  .preview-panel {
+    width: 100% !important;
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  /* Make only the resume-sheet printable and visible */
+  .resume-sheet, .resume-sheet * {
+    visibility: visible !important;
+  }
+
+  .resume-sheet {
+    position: static !important; /* Fixes multi-page clipping compared to absolute */
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 15mm !important; /* Proper padding for printing */
+    box-shadow: none !important;
+    border: none !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    min-height: auto !important; /* Prevents excessive whitespace on last page */
+  }
+
+  /* Enforce strong dark colors for all text to ensure ATS and visual readability */
+  .resume-sheet,
+  .resume-contact-bar,
+  .resume-contact-item,
+  .resume-item-sub,
+  .resume-item-desc,
+  .resume-item-header,
+  .resume-item-header span,
+  .resume-item ul li,
+  .resume-item p,
+  a {
+    color: #0f172a !important; /* Near black */
+    opacity: 1 !important; /* Remove any transparency */
+  }
+
+  /* Specific headings */
+  .resume-name {
+    color: #0f172a !important;
+    font-size: 24pt !important;
+  }
+
+  .resume-job-title {
+    color: #2563eb !important;
+    font-size: 14pt !important;
+  }
+
+  .resume-section-title {
+    color: #2563eb !important;
+    border-bottom: 1.5pt solid #cbd5e1 !important;
+    font-size: 12pt !important;
+    margin-top: 15pt !important;
+    page-break-after: avoid; /* Keep heading with content */
+  }
+
+  .skill-tag {
+    background-color: #f1f5f9 !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Links */
+  a {
+    text-decoration: none !important;
+  }
+
+  /* Pagination control to prevent clipping */
+  .resume-section {
+    page-break-inside: auto;
+  }
+
+  .resume-item {
+    page-break-inside: avoid;
+    margin-bottom: 10pt !important; /* Reduce excessive gaps */
+  }
+}

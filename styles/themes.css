@@ -1,0 +1,88 @@
+/* Theme Design Tokens & CSS Custom Properties */
+
+/* Default Theme 1: Glassmorphism Dark (Sleek Tech Dark) */
+:root, [data-theme="dark-glass"] {
+  --bg-primary: #0b0f19;
+  --bg-secondary: #111827;
+  --bg-card: rgba(17, 24, 39, 0.7);
+  --bg-card-border: rgba(255, 255, 255, 0.1);
+  --bg-input: rgba(31, 41, 55, 0.8);
+
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --accent-color: #38bdf8;
+  --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+  --accent-hover: #0284c7;
+  --accent-glow: rgba(56, 189, 248, 0.25);
+
+  --badge-bg: rgba(56, 189, 248, 0.15);
+  --badge-text: #38bdf8;
+  --badge-border: rgba(56, 189, 248, 0.3);
+
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --backdrop-blur: blur(16px);
+  --preview-bg: #0f172a;
+  --resume-paper-bg: #1e293b;
+  --resume-text-color: #f1f5f9;
+  --resume-border-color: #334155;
+}
+
+/* Theme 2: Corporate Minimal (Clean Professional Slate) */
+[data-theme="corporate-minimal"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-border: #e2e8f0;
+  --bg-input: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --accent-color: #2563eb;
+  --accent-gradient: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  --accent-hover: #1d4ed8;
+  --accent-glow: rgba(37, 99, 235, 0.15);
+
+  --badge-bg: #eff6ff;
+  --badge-text: #1d4ed8;
+  --badge-border: #bfdbfe;
+
+  --shadow-color: rgba(15, 23, 42, 0.08);
+  --backdrop-blur: none;
+  --preview-bg: #e2e8f0;
+  --resume-paper-bg: #ffffff;
+  --resume-text-color: #0f172a;
+  --resume-border-color: #cbd5e1;
+}
+
+/* Theme 3: Cyber Neon (Vibrant High-Contrast Cyberpunk) */
+[data-theme="cyber-neon"] {
+  --bg-primary: #090514;
+  --bg-secondary: #120a2a;
+  --bg-card: rgba(22, 12, 50, 0.75);
+  --bg-card-border: rgba(236, 72, 153, 0.25);
+  --bg-input: rgba(35, 20, 75, 0.9);
+
+  --text-primary: #ffffff;
+  --text-secondary: #d8b4fe;
+  --text-muted: #a855f7;
+
+  --accent-color: #ec4899;
+  --accent-gradient: linear-gradient(135deg, #f43f5e 0%, #ec4899 50%, #a855f7 100%);
+  --accent-hover: #db2777;
+  --accent-glow: rgba(236, 72, 153, 0.35);
+
+  --badge-bg: rgba(236, 72, 153, 0.15);
+  --badge-text: #f472b6;
+  --badge-border: rgba(236, 72, 153, 0.4);
+
+  --shadow-color: rgba(236, 72, 153, 0.2);
+  --backdrop-blur: blur(20px);
+  --preview-bg: #110826;
+  --resume-paper-bg: #1c0e3d;
+  --resume-text-color: #fdf2f8;
+  --resume-border-color: #4c1d95;
+}
