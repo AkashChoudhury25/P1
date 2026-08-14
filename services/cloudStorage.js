@@ -1,29 +1,63 @@
 // Draft Persistence & Analytics Service Module
 
+// Supabase Credentials provided by user
+const SUPABASE_URL = '';
+const SUPABASE_ANON_KEY = '';
+
+let supabaseClient = null;
+// Supabase integration disabled temporarily to resolve network errors.
+// if (typeof supabase !== 'undefined') {
+//   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// }
+
 const DRAFT_STORAGE_KEY = 'resume_builder_local_draft_v1';
 const ANALYTICS_STORAGE_KEY = 'resume_builder_session_analytics_v1';
 
 /**
- * Retrieves analytics metrics for the current session and fetches Vercel serverless totals if available.
+ * Retrieves analytics metrics for the current session and fetches database totals if available.
  * Starts from 0 views / 0 downloads.
  */
 function getCloudAnalytics() {
   const saved = localStorage.getItem(ANALYTICS_STORAGE_KEY);
-  if (saved) {
-    return JSON.parse(saved);
-  }
-  const initialAnalytics = {
+  let current = saved ? JSON.parse(saved) : {
     views: 0,
     downloads: 0,
     lastSync: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    cloudStatus: 'Vercel Serverless Endpoint Ready'
+    cloudStatus: 'Initializing Cloud Sync...'
   };
-  localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(initialAnalytics));
-  return initialAnalytics;
+
+  // Sync with Supabase on start
+  if (supabaseClient) {
+    supabaseClient
+      .from('analytics')
+      .select('views, downloads')
+      .eq('id', 'global_stats')
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          current.views = data.views || current.views;
+          current.downloads = data.downloads || current.downloads;
+          current.cloudStatus = 'Connected to Supabase';
+          localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(current));
+        } else if (error && error.code === 'PGRST116') {
+          // If row doesn't exist, create it
+          supabaseClient
+            .from('analytics')
+            .insert([{ id: 'global_stats', views: current.views, downloads: current.downloads }])
+            .then(() => {});
+        }
+      })
+      .catch(() => {});
+  } else {
+    current.cloudStatus = 'Local Session Mode';
+  }
+
+  localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(current));
+  return current;
 }
 
 /**
- * Increments session analytics counters locally and posts to Vercel Serverless Function /api/analytics
+ * Increments session analytics counters locally and posts to Supabase backend
  */
 function incrementAnalytics(type = 'views') {
   const current = getCloudAnalytics();
@@ -35,26 +69,26 @@ function incrementAnalytics(type = 'views') {
   current.lastSync = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(current));
 
-  // Trigger Vercel Serverless Function endpoint if deployed
-  fetch('/api/analytics', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: `increment_${type}` })
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data && data.data) {
-        // Synchronize with serverless API response
-        current.views = data.data.views || current.views;
-        current.downloads = data.data.downloads || current.downloads;
-        current.cloudStatus = 'Connected to Vercel Serverless API';
+  if (supabaseClient) {
+    const incrementPayload = type === 'views' 
+      ? { views: current.views }
+      : { downloads: current.downloads };
+
+    supabaseClient
+      .from('analytics')
+      .update(incrementPayload)
+      .eq('id', 'global_stats')
+      .then(({ error }) => {
+        if (!error) {
+          current.cloudStatus = 'Connected to Supabase';
+          localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(current));
+        }
+      })
+      .catch(() => {
+        current.cloudStatus = 'Supabase Sync Error';
         localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(current));
-      }
-    })
-    .catch(() => {
-      // Graceful fallback to client-side session metrics during local development
-      current.cloudStatus = 'Local Session Mode';
-    });
+      });
+  }
 
   return current;
 }

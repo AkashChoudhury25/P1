@@ -1,8 +1,17 @@
-function ResumePreview({ resumeData }) {
-  const { personal, experience, education, skills, projects } = resumeData;
+function ResumePreview({ resumeData, printConfig }) {
+  const { personal, experience, education, skills, projects, certifications, achievements } = resumeData;
 
   return (
-    <div className="resume-sheet" id="resume-sheet-printable">
+    <div 
+      className="resume-sheet" 
+      id="resume-sheet-printable"
+      style={printConfig ? { fontSize: printConfig.fontSize, padding: printConfig.margin } : {}}
+    >
+      {/* Screen-only draft marker — hidden automatically when printing */}
+      <div className="resume-watermark" aria-hidden="true">
+        <span className="pf-stamp pf-stamp--accent">Live preview</span>
+      </div>
+
       {/* Header */}
       <header className="resume-header">
         <h1 className="resume-name">{personal.fullName || 'Your Name'}</h1>
@@ -89,6 +98,22 @@ function ResumePreview({ resumeData }) {
         </section>
       )}
 
+      {/* Certifications */}
+      {certifications && certifications.length > 0 && (
+        <section className="resume-section">
+          <h2 className="resume-section-title">Certifications</h2>
+          {certifications.map((cert) => (
+            <div key={cert.id} className="resume-item">
+              <div className="resume-item-header">
+                <span>{cert.name}</span>
+                <span>{cert.date}</span>
+              </div>
+              <div className="resume-item-sub">{cert.issuer}</div>
+            </div>
+          ))}
+        </section>
+      )}
+
       {/* Skills */}
       {skills && skills.length > 0 && (
         <section className="resume-section">
@@ -124,6 +149,21 @@ function ResumePreview({ resumeData }) {
                   🔗 {proj.link}
                 </a>
               )}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* Achievements */}
+      {achievements && achievements.length > 0 && (
+        <section className="resume-section">
+          <h2 className="resume-section-title">Honors & Achievements</h2>
+          {achievements.map((ach) => (
+            <div key={ach.id} className="resume-item">
+              <div className="resume-item-header">
+                <span>{ach.title}</span>
+              </div>
+              <p className="resume-item-desc">{ach.description}</p>
             </div>
           ))}
         </section>

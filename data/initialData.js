@@ -74,5 +74,20 @@ const initialResumeData = {
       link: "https://github.com/alexrivera-cloud/cloud-resume-builder"
     }
   ],
+  certifications: [
+    {
+      id: "cert-1",
+      name: "AWS Certified Solutions Architect - Associate",
+      issuer: "Amazon Web Services",
+      date: "2025"
+    }
+  ],
+  achievements: [
+    {
+      id: "ach-1",
+      title: "First Place - Global Cloud Hackathon",
+      description: "Won first place for developing a serverless real-time collaborative workspace."
+    }
+  ],
   activeTheme: "dark-glass"
 };

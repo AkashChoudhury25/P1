@@ -7,6 +7,7 @@ function App() {
 
   const [activeTheme, setActiveTheme] = React.useState(resumeData.activeTheme || 'dark-glass');
   const [viewMode, setViewMode] = React.useState('resume'); // 'resume' | 'portfolio'
+  const [printConfig, setPrintConfig] = React.useState({ fontSize: '11pt', margin: '15mm' });
   const [analyticsData, setAnalyticsData] = React.useState(getCloudAnalytics());
   const [isQRModalOpen, setIsQRModalOpen] = React.useState(false);
   const [toasts, setToasts] = React.useState([]);
@@ -87,6 +88,31 @@ function App() {
               </span>
             </div>
 
+            {/* Print Layout Customizer (Phase 3) */}
+            {viewMode === 'resume' && (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: 'var(--bg-input)', padding: '0.25rem 0.5rem', borderRadius: '8px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Format:</span>
+                <select 
+                  value={printConfig.fontSize} 
+                  onChange={(e) => setPrintConfig({...printConfig, fontSize: e.target.value})}
+                  className="theme-select-input"
+                >
+                  <option value="10pt">10pt Font</option>
+                  <option value="11pt">11pt Font</option>
+                  <option value="12pt">12pt Font</option>
+                </select>
+                <select 
+                  value={printConfig.margin} 
+                  onChange={(e) => setPrintConfig({...printConfig, margin: e.target.value})}
+                  className="theme-select-input"
+                >
+                  <option value="10mm">Narrow Margins</option>
+                  <option value="15mm">Normal Margins</option>
+                  <option value="20mm">Wide Margins</option>
+                </select>
+              </div>
+            )}
+
             {/* Dual View Toggle */}
             <div className="view-mode-toggle">
               <button
@@ -106,7 +132,7 @@ function App() {
 
           {/* Render Active Mode */}
           {viewMode === 'resume' ? (
-            <ResumePreview resumeData={resumeData} />
+            <ResumePreview resumeData={resumeData} printConfig={printConfig} />
           ) : (
             <PortfolioView resumeData={resumeData} />
           )}
@@ -122,10 +148,10 @@ function App() {
       />
 
       {/* Toast Notification Container */}
-      <div className="toast-container">
+      <div className="toast-container" aria-live="polite" aria-atomic="false">
         {toasts.map((toast) => (
-          <div key={toast.id} className="toast">
-            <span>ℹ️</span>
+          <div key={toast.id} className="toast" role="status">
+            <span aria-hidden="true">ℹ️</span>
             <span>{toast.message}</span>
           </div>
         ))}
@@ -133,3 +159,6 @@ function App() {
     </div>
   );
 }
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);

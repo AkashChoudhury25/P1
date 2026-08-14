@@ -3,7 +3,7 @@ function QRCodeModal({ isOpen, onClose, shareUrl, onToast }) {
 
   const qrImageApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
     shareUrl
-  )}&color=0b0f19&bgcolor=ffffff`;
+  )}&color=10182a&bgcolor=ffffff`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl);

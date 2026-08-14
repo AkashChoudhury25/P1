@@ -1,6 +1,26 @@
 function FormBuilder({ resumeData, onChange, onToast }) {
   const [activeTab, setActiveTab] = React.useState('personal');
 
+  const isValidEmail = (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  const isValidUrl = (value) => !value || /^https?:\/\//.test(value);
+
+  // Rough completion estimate across all sections — powers the progress track.
+  const completionPercent = React.useMemo(() => {
+    const p = resumeData.personal || {};
+    const checks = [
+      !!p.fullName,
+      !!p.title,
+      !!p.email,
+      !!p.summary,
+      (resumeData.experience || []).length > 0,
+      (resumeData.education || []).length > 0,
+      (resumeData.skills || []).length > 0,
+      (resumeData.projects || []).length > 0
+    ];
+    const done = checks.filter(Boolean).length;
+    return Math.round((done / checks.length) * 100);
+  }, [resumeData]);
+
   // Handle personal info change
   const handlePersonalChange = (field, value) => {
     onChange({
@@ -10,6 +30,26 @@ function FormBuilder({ resumeData, onChange, onToast }) {
         [field]: value
       }
     });
+  };
+
+  const steps = [
+    { id: 'personal', label: '👤 Personal' },
+    { id: 'experience', label: '💼 Experience' },
+    { id: 'education', label: '🎓 Education' },
+    { id: 'skills', label: '⚡ Skills' },
+    { id: 'certifications', label: '📜 Certs' },
+    { id: 'achievements', label: '🏆 Awards' },
+    { id: 'projects', label: '🚀 Projects' }
+  ];
+  
+  const currentStepIndex = steps.findIndex(s => s.id === activeTab);
+  
+  const goNext = () => {
+    if (currentStepIndex < steps.length - 1) setActiveTab(steps[currentStepIndex + 1].id);
+  };
+  
+  const goPrev = () => {
+    if (currentStepIndex > 0) setActiveTab(steps[currentStepIndex - 1].id);
   };
 
   // Dynamic Array Handlers (Experience, Education, Projects, Skills)
@@ -51,6 +91,19 @@ function FormBuilder({ resumeData, onChange, onToast }) {
         description: 'Built a web solution hosted on cloud edge network.',
         link: 'https://github.com/example/project'
       };
+    } else if (section === 'certifications') {
+      newItem = {
+        id: `cert-${Date.now()}`,
+        name: 'New Certification',
+        issuer: 'Issuing Organization',
+        date: '2025'
+      };
+    } else if (section === 'achievements') {
+      newItem = {
+        id: `ach-${Date.now()}`,
+        title: 'New Achievement',
+        description: 'Brief description of the award or milestone.'
+      };
     }
     onChange({ ...resumeData, [section]: [...resumeData[section], newItem] });
     onToast(`Added new item to ${section}`);
@@ -71,38 +124,35 @@ function FormBuilder({ resumeData, onChange, onToast }) {
 
   return (
     <div className="editor-panel">
+      {/* Completion Progress Track */}
+      <div className="progress-track-wrap">
+        <div className="progress-track-label">
+          <span>Manifest completeness</span>
+          <strong>{completionPercent}%</strong>
+        </div>
+        <div
+          className="progress-track"
+          role="progressbar"
+          aria-valuenow={completionPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Resume completeness"
+        >
+          <div className="progress-track-fill" style={{ width: `${completionPercent}%` }}></div>
+        </div>
+      </div>
+
       {/* Form Tabs Navigation */}
       <div className="form-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`}
-          onClick={() => setActiveTab('personal')}
-        >
-          👤 Personal Info
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'experience' ? 'active' : ''}`}
-          onClick={() => setActiveTab('experience')}
-        >
-          💼 Experience ({resumeData.experience.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'education' ? 'active' : ''}`}
-          onClick={() => setActiveTab('education')}
-        >
-          🎓 Education ({resumeData.education.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`}
-          onClick={() => setActiveTab('skills')}
-        >
-          ⚡ Skills ({resumeData.skills.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
-          onClick={() => setActiveTab('projects')}
-        >
-          🚀 Projects ({resumeData.projects.length})
-        </button>
+        {steps.map((step, idx) => (
+          <button
+            key={step.id}
+            className={`tab-btn ${activeTab === step.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(step.id)}
+          >
+            {step.label} {step.id !== 'personal' && step.id !== 'skills' && `(${(resumeData[step.id] || []).length})`}
+          </button>
+        ))}
       </div>
 
       {/* Tab Contents */}
@@ -134,15 +184,19 @@ function FormBuilder({ resumeData, onChange, onToast }) {
                 <label>Email Address</label>
                 <input
                   type="email"
-                  value={resumeData.personal.email}
+                  value={resumeData.personal.email || ''}
                   onChange={(e) => handlePersonalChange('email', e.target.value)}
+                  aria-invalid={!isValidEmail(resumeData.personal.email)}
                 />
+                {!isValidEmail(resumeData.personal.email) && (
+                  <span className="field-error">⚠ Enter a valid email address, like name@example.com</span>
+                )}
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
                 <input
                   type="text"
-                  value={resumeData.personal.phone}
+                  value={resumeData.personal.phone || ''}
                   onChange={(e) => handlePersonalChange('phone', e.target.value)}
                 />
               </div>
@@ -153,7 +207,7 @@ function FormBuilder({ resumeData, onChange, onToast }) {
                 <label>Location</label>
                 <input
                   type="text"
-                  value={resumeData.personal.location}
+                  value={resumeData.personal.location || ''}
                   onChange={(e) => handlePersonalChange('location', e.target.value)}
                 />
               </div>
@@ -161,9 +215,13 @@ function FormBuilder({ resumeData, onChange, onToast }) {
                 <label>GitHub Profile</label>
                 <input
                   type="url"
-                  value={resumeData.personal.github}
+                  value={resumeData.personal.github || ''}
                   onChange={(e) => handlePersonalChange('github', e.target.value)}
+                  aria-invalid={!isValidUrl(resumeData.personal.github)}
                 />
+                {!isValidUrl(resumeData.personal.github) && (
+                  <span className="field-error">⚠ Include https:// at the start of the link</span>
+                )}
               </div>
             </div>
 
@@ -181,6 +239,13 @@ function FormBuilder({ resumeData, onChange, onToast }) {
         {/* Experience Tab */}
         {activeTab === 'experience' && (
           <>
+            {resumeData.experience.length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">💼</span>
+                <span className="empty-state-title">No roles added yet</span>
+                <span className="empty-state-desc">Add your most recent job first — it carries the most weight with recruiters.</span>
+              </div>
+            )}
             {resumeData.experience.map((exp) => (
               <div key={exp.id} className="item-card">
                 <div className="item-card-header">
@@ -258,6 +323,13 @@ function FormBuilder({ resumeData, onChange, onToast }) {
         {/* Education Tab */}
         {activeTab === 'education' && (
           <>
+            {resumeData.education.length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">🎓</span>
+                <span className="empty-state-title">No education added yet</span>
+                <span className="empty-state-desc">Add your degree or most relevant coursework.</span>
+              </div>
+            )}
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="item-card">
                 <div className="item-card-header">
@@ -334,6 +406,13 @@ function FormBuilder({ resumeData, onChange, onToast }) {
         {/* Projects Tab */}
         {activeTab === 'projects' && (
           <>
+            {resumeData.projects.length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">🚀</span>
+                <span className="empty-state-title">No projects added yet</span>
+                <span className="empty-state-desc">Showcase the work you're proudest of, with a link to the code or a live demo.</span>
+              </div>
+            )}
             {resumeData.projects.map((proj) => (
               <div key={proj.id} className="item-card">
                 <div className="item-card-header">
@@ -386,6 +465,131 @@ function FormBuilder({ resumeData, onChange, onToast }) {
             </button>
           </>
         )}
+
+        {/* Certifications Tab */}
+        {activeTab === 'certifications' && (
+          <>
+            {(resumeData.certifications || []).length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">📜</span>
+                <span className="empty-state-title">No certifications added yet</span>
+                <span className="empty-state-desc">List credentials that back up your skills section.</span>
+              </div>
+            )}
+            {(resumeData.certifications || []).map((cert) => (
+              <div key={cert.id} className="item-card">
+                <div className="item-card-header">
+                  <span className="item-card-title">{cert.name || 'Certification'}</span>
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeArrayItem('certifications', cert.id)}
+                  >
+                    🗑️ Remove
+                  </button>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Certification Name</label>
+                    <input
+                      type="text"
+                      value={cert.name}
+                      onChange={(e) => updateArrayItem('certifications', cert.id, 'name', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Issuing Organization</label>
+                    <input
+                      type="text"
+                      value={cert.issuer}
+                      onChange={(e) => updateArrayItem('certifications', cert.id, 'issuer', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Date / Year</label>
+                  <input
+                    type="text"
+                    value={cert.date}
+                    onChange={(e) => updateArrayItem('certifications', cert.id, 'date', e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+            <button className="btn btn-secondary" onClick={() => addArrayItem('certifications')}>
+              ➕ Add Certification
+            </button>
+          </>
+        )}
+
+        {/* Achievements Tab */}
+        {activeTab === 'achievements' && (
+          <>
+            {(resumeData.achievements || []).length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">🏆</span>
+                <span className="empty-state-title">No achievements added yet</span>
+                <span className="empty-state-desc">Awards, hackathon wins, or measurable milestones go here.</span>
+              </div>
+            )}
+            {(resumeData.achievements || []).map((ach) => (
+              <div key={ach.id} className="item-card">
+                <div className="item-card-header">
+                  <span className="item-card-title">{ach.title || 'Achievement'}</span>
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeArrayItem('achievements', ach.id)}
+                  >
+                    🗑️ Remove
+                  </button>
+                </div>
+                <div className="form-group">
+                  <label>Title / Award</label>
+                  <input
+                    type="text"
+                    value={ach.title}
+                    onChange={(e) => updateArrayItem('achievements', ach.id, 'title', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    rows="3"
+                    value={ach.description}
+                    onChange={(e) => updateArrayItem('achievements', ach.id, 'description', e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+            <button className="btn btn-secondary" onClick={() => addArrayItem('achievements')}>
+              ➕ Add Achievement
+            </button>
+          </>
+        )}
+
+        {/* Stepper Navigation */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', borderTop: '1px solid var(--bg-card-border)', paddingTop: '1.5rem' }}>
+          <button 
+            className="btn btn-secondary" 
+            onClick={goPrev} 
+            disabled={currentStepIndex === 0}
+            style={{ opacity: currentStepIndex === 0 ? 0.4 : 1, cursor: currentStepIndex === 0 ? 'not-allowed' : 'pointer' }}
+          >
+            ◀ Previous
+          </button>
+          
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+            Step {currentStepIndex + 1} of {steps.length}
+          </div>
+
+          <button 
+            className="btn btn-primary" 
+            onClick={goNext} 
+            disabled={currentStepIndex === steps.length - 1}
+            style={{ opacity: currentStepIndex === steps.length - 1 ? 0.4 : 1, cursor: currentStepIndex === steps.length - 1 ? 'not-allowed' : 'pointer' }}
+          >
+            Next ▶
+          </button>
+        </div>
       </div>
     </div>
   );

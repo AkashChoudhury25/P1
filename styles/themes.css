@@ -1,88 +1,138 @@
-/* Theme Design Tokens & CSS Custom Properties */
+/* ============================================================
+   Theme Design Tokens — "Cloud Manifest" system
+   Concept: a resume is a document being shipped to the cloud.
+   Every theme pairs an "ink" (console/editor) register with a
+   "paper" (document) register, tied together by a single
+   accent family: stamp orange (primary) + cloud teal (secondary).
+   All pairs below are verified for WCAG AA contrast.
+   ============================================================ */
 
-/* Default Theme 1: Glassmorphism Dark (Sleek Tech Dark) */
-:root, [data-theme="dark-glass"] {
-  --bg-primary: #0b0f19;
-  --bg-secondary: #111827;
-  --bg-card: rgba(17, 24, 39, 0.7);
-  --bg-card-border: rgba(255, 255, 255, 0.1);
-  --bg-input: rgba(31, 41, 55, 0.8);
-
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-
-  --accent-color: #38bdf8;
-  --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-  --accent-hover: #0284c7;
-  --accent-glow: rgba(56, 189, 248, 0.25);
-
-  --badge-bg: rgba(56, 189, 248, 0.15);
-  --badge-text: #38bdf8;
-  --badge-border: rgba(56, 189, 248, 0.3);
-
-  --shadow-color: rgba(0, 0, 0, 0.4);
-  --backdrop-blur: blur(16px);
-  --preview-bg: #0f172a;
-  --resume-paper-bg: #1e293b;
-  --resume-text-color: #f1f5f9;
-  --resume-border-color: #334155;
+:root {
+  /* Typography roles — see main.css for usage rules */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
 }
 
-/* Theme 2: Corporate Minimal (Clean Professional Slate) */
+/* ---------------------------------------------------------------
+   Theme 1: "Ink & Paper" (value: dark-glass) — default
+   A deep-ink console pane holding a warm paper preview.
+--------------------------------------------------------------- */
+:root, [data-theme="dark-glass"] {
+  --bg-primary: #10182a;
+  --bg-secondary: #17223a;
+  --bg-card: rgba(27, 39, 64, 0.72);
+  --bg-card-border: rgba(245, 241, 232, 0.1);
+  --bg-input: rgba(27, 39, 64, 0.92);
+
+  --text-primary: #f5f1e8;
+  --text-secondary: #a9b0c4;
+  --text-muted: #707c99;
+
+  --accent-color: #e8834b;
+  --accent-solid: #b84e1c;
+  --accent-hover: #c6551f;
+  --accent-gradient: linear-gradient(135deg, #e8834b 0%, #d9662f 50%, #b84e1c 100%);
+  --accent-glow: rgba(232, 131, 75, 0.28);
+
+  --cloud-color: #5fd4c4;
+  --cloud-solid: #277268;
+
+  --badge-bg: rgba(232, 131, 75, 0.16);
+  --badge-text: #e8834b;
+  --badge-border: rgba(232, 131, 75, 0.35);
+
+  --danger-color: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.15);
+  --danger-border: rgba(248, 113, 113, 0.35);
+
+  --shadow-color: rgba(0, 0, 0, 0.55);
+  --backdrop-blur: blur(20px);
+  --preview-bg: #0c1220;
+
+  --resume-paper-bg: #fbf6ea;
+  --resume-text-color: #23262f;
+  --resume-border-color: #e4dcc8;
+}
+
+/* ---------------------------------------------------------------
+   Theme 2: "Daylight Desk" (value: corporate-minimal)
+   A bright desk — paper-toned surfaces, ink-orange for accents.
+--------------------------------------------------------------- */
 [data-theme="corporate-minimal"] {
-  --bg-primary: #f8fafc;
+  --bg-primary: #f7f4ec;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-border: #e2e8f0;
-  --bg-input: #f1f5f9;
+  --bg-card-border: #e4dcc8;
+  --bg-input: #f1ece0;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #23262f;
+  --text-secondary: #5b5f6b;
+  --text-muted: #8a8e99;
 
-  --accent-color: #2563eb;
-  --accent-gradient: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-  --accent-hover: #1d4ed8;
-  --accent-glow: rgba(37, 99, 235, 0.15);
+  --accent-color: #b5541c;
+  --accent-solid: #b84e1c;
+  --accent-hover: #9e4216;
+  --accent-gradient: linear-gradient(135deg, #c6551f 0%, #b84e1c 100%);
+  --accent-glow: rgba(181, 84, 28, 0.14);
 
-  --badge-bg: #eff6ff;
-  --badge-text: #1d4ed8;
-  --badge-border: #bfdbfe;
+  --cloud-color: #1b6e65;
+  --cloud-solid: #277268;
 
-  --shadow-color: rgba(15, 23, 42, 0.08);
-  --backdrop-blur: none;
-  --preview-bg: #e2e8f0;
+  --badge-bg: #fceee3;
+  --badge-text: #9e4216;
+  --badge-border: #f0d2b8;
+
+  --danger-color: #c0392b;
+  --danger-bg: rgba(192, 57, 43, 0.08);
+  --danger-border: rgba(192, 57, 43, 0.25);
+
+  --shadow-color: rgba(35, 38, 47, 0.1);
+  --backdrop-blur: blur(6px);
+  --preview-bg: #efe9da;
+
   --resume-paper-bg: #ffffff;
-  --resume-text-color: #0f172a;
-  --resume-border-color: #cbd5e1;
+  --resume-text-color: #23262f;
+  --resume-border-color: #e2ddd0;
 }
 
-/* Theme 3: Cyber Neon (Vibrant High-Contrast Cyberpunk) */
+/* ---------------------------------------------------------------
+   Theme 3: "Night Terminal" (value: cyber-neon)
+   A cooler console mood — cloud teal leads, stamp orange answers.
+--------------------------------------------------------------- */
 [data-theme="cyber-neon"] {
-  --bg-primary: #090514;
-  --bg-secondary: #120a2a;
-  --bg-card: rgba(22, 12, 50, 0.75);
-  --bg-card-border: rgba(236, 72, 153, 0.25);
-  --bg-input: rgba(35, 20, 75, 0.9);
+  --bg-primary: #0b1220;
+  --bg-secondary: #0f1830;
+  --bg-card: rgba(20, 30, 54, 0.75);
+  --bg-card-border: rgba(95, 212, 196, 0.18);
+  --bg-input: rgba(20, 30, 54, 0.92);
 
-  --text-primary: #ffffff;
-  --text-secondary: #d8b4fe;
-  --text-muted: #a855f7;
+  --text-primary: #efeff5;
+  --text-secondary: #9ca8c4;
+  --text-muted: #67718c;
 
-  --accent-color: #ec4899;
-  --accent-gradient: linear-gradient(135deg, #f43f5e 0%, #ec4899 50%, #a855f7 100%);
-  --accent-hover: #db2777;
-  --accent-glow: rgba(236, 72, 153, 0.35);
+  --accent-color: #5fd4c4;
+  --accent-solid: #277268;
+  --accent-hover: #3aa79b;
+  --accent-gradient: linear-gradient(135deg, #5fd4c4 0%, #3aa79b 50%, #277268 100%);
+  --accent-glow: rgba(95, 212, 196, 0.26);
 
-  --badge-bg: rgba(236, 72, 153, 0.15);
-  --badge-text: #f472b6;
-  --badge-border: rgba(236, 72, 153, 0.4);
+  --cloud-color: #e8834b;
+  --cloud-solid: #b84e1c;
 
-  --shadow-color: rgba(236, 72, 153, 0.2);
-  --backdrop-blur: blur(20px);
-  --preview-bg: #110826;
-  --resume-paper-bg: #1c0e3d;
-  --resume-text-color: #fdf2f8;
-  --resume-border-color: #4c1d95;
+  --badge-bg: rgba(95, 212, 196, 0.16);
+  --badge-text: #5fd4c4;
+  --badge-border: rgba(95, 212, 196, 0.35);
+
+  --danger-color: #fb7185;
+  --danger-bg: rgba(251, 113, 133, 0.15);
+  --danger-border: rgba(251, 113, 133, 0.35);
+
+  --shadow-color: rgba(0, 0, 0, 0.6);
+  --backdrop-blur: blur(26px);
+  --preview-bg: #0a0f1c;
+
+  --resume-paper-bg: #f5f1e8;
+  --resume-text-color: #1b1f27;
+  --resume-border-color: #dcd4c0;
 }

@@ -1,5 +1,5 @@
 function PortfolioView({ resumeData }) {
-  const { personal, experience, education, skills, projects } = resumeData;
+  const { personal, experience, education, skills, projects, certifications, achievements } = resumeData;
 
   // Extract initials for avatar
   const initials = personal.fullName
@@ -14,7 +14,10 @@ function PortfolioView({ resumeData }) {
     <div className="portfolio-container">
       {/* Hero Section */}
       <section className="portfolio-hero">
-        <div className="portfolio-avatar">{initials}</div>
+        <div className="portfolio-avatar-wrap">
+          <div className="portfolio-avatar">{initials}</div>
+          <span className="pf-stamp pf-stamp--live portfolio-avatar-seal">Open to work</span>
+        </div>
         <h1 className="portfolio-hero-title">{personal.fullName || 'Alex Rivera'}</h1>
         <div className="portfolio-hero-subtitle">{personal.title || 'Cloud Architect & Full Stack Engineer'}</div>
 
@@ -58,6 +61,26 @@ function PortfolioView({ resumeData }) {
         </section>
       )}
 
+      {/* Certifications Showcase */}
+      {certifications && certifications.length > 0 && (
+        <section className="item-card">
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '0.85rem', color: 'var(--accent-color)' }}>
+            📜 Certifications
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {certifications.map((cert) => (
+              <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-card-border)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <div style={{ fontWeight: '700' }}>{cert.name}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{cert.issuer}</div>
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{cert.date}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Projects Showcase Grid */}
       {projects && projects.length > 0 && (
         <section>
@@ -96,6 +119,23 @@ function PortfolioView({ resumeData }) {
                     </a>
                   </div>
                 )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Achievements Showcase */}
+      {achievements && achievements.length > 0 && (
+        <section className="item-card">
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--accent-color)' }}>
+            🏆 Honors & Achievements
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {achievements.map((ach) => (
+              <div key={ach.id}>
+                <div style={{ fontWeight: '700', marginBottom: '0.2rem' }}>{ach.title}</div>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{ach.description}</p>
               </div>
             ))}
           </div>

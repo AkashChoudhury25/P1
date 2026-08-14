@@ -4,6 +4,7 @@
   /* Define A4 page explicitly */
   @page {
     size: A4 portrait;
+    margin: 0;
   }
 
   /* Hide all non-printable UI chrome */
@@ -11,7 +12,7 @@
     visibility: hidden;
   }
   
-  .navbar, .editor-panel, .preview-header, .btn, .modal-overlay, .toast-container {
+  .navbar, .editor-panel, .preview-header, .btn, .modal-overlay, .toast-container, .resume-watermark {
     display: none !important;
   }
   
@@ -42,7 +43,7 @@
     box-shadow: none !important;
     border: none !important;
     background-color: #ffffff !important;
-    color: #0f172a !important;
+    color: #23262f !important;
     font-size: 11pt !important;
     min-height: auto !important; /* Prevents excessive whitespace on last page */
   }
@@ -58,33 +59,34 @@
   .resume-item ul li,
   .resume-item p,
   a {
-    color: #0f172a !important; /* Near black */
+    color: #23262f !important; /* Near-black graphite */
     opacity: 1 !important; /* Remove any transparency */
   }
 
   /* Specific headings */
   .resume-name {
-    color: #0f172a !important;
+    color: #23262f !important;
     font-size: 24pt !important;
+    font-family: 'Fraunces', Georgia, serif !important;
   }
 
   .resume-job-title {
-    color: #2563eb !important;
+    color: #b84e1c !important;
     font-size: 14pt !important;
   }
 
   .resume-section-title {
-    color: #2563eb !important;
-    border-bottom: 1.5pt solid #cbd5e1 !important;
+    color: #b84e1c !important;
+    border-bottom: 1.5pt solid #e2ddd0 !important;
     font-size: 12pt !important;
     margin-top: 15pt !important;
     page-break-after: avoid; /* Keep heading with content */
   }
 
   .skill-tag {
-    background-color: #f1f5f9 !important;
-    color: #1e293b !important;
-    border: 1px solid #cbd5e1 !important;
+    background-color: #fceee3 !important;
+    color: #9e4216 !important;
+    border: 1px solid #f0d2b8 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
