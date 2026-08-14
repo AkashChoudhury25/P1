@@ -91,3 +91,26 @@ const initialResumeData = {
   ],
   activeTheme: "dark-glass"
 };
+
+// Blank resume — used for every new / signed-out / fresh session.
+// Same shape as initialResumeData but all fields are empty.
+const blankResumeData = {
+  personal: {
+    fullName: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    github: "",
+    linkedin: "",
+    summary: ""
+  },
+  experience:     [],
+  education:      [],
+  skills:         [],
+  projects:       [],
+  certifications: [],
+  achievements:   [],
+  activeTheme:    "dark-glass"
+};
