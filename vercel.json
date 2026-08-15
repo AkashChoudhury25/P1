@@ -1,12 +1,13 @@
 {
   "version": 2,
   "name": "cloudfolio",
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "api/analytics.js", "use": "@vercel/node" }
-  ],
   "routes": [
     { "src": "/api/analytics", "dest": "/api/analytics.js" },
+    { "src": "/styles/(.*)", "dest": "/styles/$1" },
+    { "src": "/data/(.*)", "dest": "/data/$1" },
+    { "src": "/services/(.*)", "dest": "/services/$1" },
+    { "src": "/components/(.*)", "dest": "/components/$1" },
+    { "src": "/App.js", "dest": "/App.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
